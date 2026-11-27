@@ -1,15 +1,21 @@
+type GeminiPart = { text: string } | { inlineData: { mimeType: string; data: string } };
 type GeminiContent = {
   role: "user" | "model";
-  parts: { text: string }[];
+  parts: GeminiPart[];
 };
 
-export async function generateGeminiText(contents: GeminiContent[], systemInstruction: string) {
+export async function generateGeminiText(
+  contents: GeminiContent[],
+  systemInstruction: string,
+  maxOutputTokens = 1400
+) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_NOT_CONFIGURED");
 
   const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+    "https://generativelanguage.googleapis.com/v1beta/models/" +
+      encodeURIComponent(model) + ":generateContent",
     {
       method: "POST",
       headers: {
@@ -20,8 +26,8 @@ export async function generateGeminiText(contents: GeminiContent[], systemInstru
         systemInstruction: { parts: [{ text: systemInstruction }] },
         contents,
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1400
+          temperature: 0.4,
+          maxOutputTokens
         }
       }),
       cache: "no-store"
