@@ -1,0 +1,108 @@
+"use client";
+
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+
+type Language = "en" | "ar";
+const translations: Record<string, { en: string; ar: string }> = {
+  "Workspace": { en: "Workspace", ar: "مساحة العمل" },
+  "Dashboard": { en: "Dashboard", ar: "لوحة التحكم" },
+  "Sign out": { en: "Sign out", ar: "تسجيل الخروج" },
+  "Signing out...": { en: "Signing out...", ar: "جاري تسجيل الخروج..." },
+  "Student Workspace": { en: "Student Workspace", ar: "مساحة الطالب" },
+  "Teacher Workspace": { en: "Teacher Workspace", ar: "مساحة المدرس" },
+  "Admin Workspace": { en: "Admin Workspace", ar: "مساحة المسؤول" },
+  "Welcome,": { en: "Welcome,", ar: "أهلاً،" },
+  "Your learning workspace.": { en: "Your learning workspace.", ar: "مساحة تعلمك المتكاملة." },
+  "Choose a tool below to open its workspace and see its current availability.": { en: "Choose a tool below to open its workspace and see its current availability.", ar: "اختار أداة من الأدوات دي علشان تفتح مساحة العمل وتشوف حالتها." },
+  "AI Personal Tutor": { en: "AI Personal Tutor", ar: "المعلم الذكي الشخصي" },
+  "An AI learning assistant for explanations, examples, and guided practice.": { en: "An AI learning assistant for explanations, examples, and guided practice.", ar: "مساعد ذكي لشرح الدروس وتقديم الأمثلة والتدريب خطوة بخطوة." },
+  "Lecture Assistant": { en: "Lecture Assistant", ar: "مساعد المحاضرات" },
+  "Record or upload permitted lectures, transcribe them, and create revision notes.": { en: "Record or upload permitted lectures, transcribe them, and create revision notes.", ar: "ارفع المحاضرات وحوّلها إلى نصوص وملخصات للمراجعة." },
+  "Book Assistant": { en: "Book Assistant", ar: "مساعد الكتب" },
+  "Upload PDF references and ask questions with page-based citations.": { en: "Upload PDF references and ask questions with page-based citations.", ar: "ارفع ملفات PDF واسأل عنها مع الإشارة إلى أرقام الصفحات." },
+  "Smart Focus": { en: "Smart Focus", ar: "التركيز الذكي" },
+  "A study timer with breaks, session history, and daily goals.": { en: "A study timer with breaks, session history, and daily goals.", ar: "مؤقت للمذاكرة مع فترات راحة وسجل الجلسات وأهداف يومية." },
+  "Smart Quizzes": { en: "Smart Quizzes", ar: "الاختبارات الذكية" },
+  "Generate practice quizzes and review your answers.": { en: "Generate practice quizzes and review your answers.", ar: "أنشئ اختبارات تدريبية وراجع إجاباتك." },
+  "My Progress": { en: "My Progress", ar: "تقدمي" },
+  "Review study activity and learning progress over time.": { en: "Review study activity and learning progress over time.", ar: "تابع نشاط المذاكرة وتطور مستواك مع الوقت." },
+  "My Classes": { en: "My Classes", ar: "فصولي" },
+  "Create classes, manage student membership, and share a join code.": { en: "Create classes, manage student membership, and share a join code.", ar: "أنشئ الفصول وأدر الطلاب وشارك كود الانضمام." },
+  "My Courses": { en: "My Courses", ar: "كورساتي" },
+  "Organize teaching materials and lessons.": { en: "Organize teaching materials and lessons.", ar: "نظّم المواد التعليمية والدروس." },
+  "AI Lesson Planner": { en: "AI Lesson Planner", ar: "مخطط الدروس الذكي" },
+  "Draft lesson plans with learning goals and activities.": { en: "Draft lesson plans with learning goals and activities.", ar: "جهّز خطط الدروس والأهداف والأنشطة التعليمية." },
+  "AI Exam Creator": { en: "AI Exam Creator", ar: "منشئ الاختبارات الذكي" },
+  "Prepare, review, and publish assessments.": { en: "Prepare, review, and publish assessments.", ar: "أنشئ الاختبارات وراجعها وانشرها." },
+  "Results & Reports": { en: "Results & Reports", ar: "النتائج والتقارير" },
+  "Review submissions and class-level results.": { en: "Review submissions and class-level results.", ar: "راجع إجابات الطلاب ونتائج الفصول." },
+  "User Management": { en: "User Management", ar: "إدارة المستخدمين" },
+  "Review user accounts and account status.": { en: "Review user accounts and account status.", ar: "راجع حسابات المستخدمين وحالتها." },
+  "Platform Settings": { en: "Platform Settings", ar: "إعدادات المنصة" },
+  "Manage platform configuration and usage limits.": { en: "Manage platform configuration and usage limits.", ar: "إدارة إعدادات المنصة وحدود الاستخدام." },
+  "Ready to use": { en: "Ready to use", ar: "جاهزة للاستخدام" },
+  "In development": { en: "In development", ar: "قيد التطوير" },
+  "Back to dashboard": { en: "← Back to dashboard", ar: "← العودة للوحة التحكم" },
+  "This tool is not active yet": { en: "This tool is not active yet", ar: "الأداة دي لسه مش متاحة" },
+  "This feature is still being implemented. It will become available when its backend and user actions are ready.": { en: "This feature is still being implemented. It will become available when its backend and user actions are ready.", ar: "الميزة دي لسه تحت التطوير، وهتكون متاحة لما يكتمل نظامها والوظائف الخاصة بيها." },
+  "A smarter way to learn and teach": { en: "A smarter way to learn and teach", ar: "طريقة أذكى للتعلم والتعليم" },
+  "Learn Smarter.": { en: "Learn Smarter.", ar: "اتعلم بذكاء." },
+  "Focus Better.": { en: "Focus Better.", ar: "ركّز بشكل أفضل." },
+  "Achieve More.": { en: "Achieve More.", ar: "حقق أكتر." },
+  "Your personal AI learning companion for understanding lessons, organizing study time, and making teaching easier.": { en: "Your personal AI learning companion for understanding lessons, organizing study time, and making teaching easier.", ar: "رفيقك التعليمي الذكي لفهم الدروس وتنظيم وقت المذاكرة وتسهيل التدريس." },
+  "Create free account": { en: "Create free account", ar: "أنشئ حساب مجاني" },
+  "Explore features": { en: "Explore features", ar: "استكشف المميزات" },
+  "Features": { en: "Features", ar: "المميزات" },
+  "How it works": { en: "How it works", ar: "طريقة العمل" },
+  "Log in": { en: "Log in", ar: "تسجيل الدخول" },
+  "Get started": { en: "Get started", ar: "ابدأ الآن" },
+  "WHAT YOU CAN DO": { en: "WHAT YOU CAN DO", ar: "إيه اللي تقدر تعمله" },
+  "Tools for learning and teaching": { en: "Tools for learning and teaching", ar: "أدوات للتعلم والتعليم" },
+  "Purpose-built features for students and teachers.": { en: "Purpose-built features for students and teachers.", ar: "مميزات مصممة خصيصًا للطلاب والمدرسين." },
+  "GET STARTED": { en: "GET STARTED", ar: "ابدأ دلوقتي" },
+  "One platform. Two dedicated experiences.": { en: "One platform. Two dedicated experiences.", ar: "منصة واحدة وتجربتان مخصصتان." },
+  "Choose whether you are a student or a teacher. FOCUS AI will take you to a workspace designed for your role.": { en: "Choose whether you are a student or a teacher. FOCUS AI will take you to a workspace designed for your role.", ar: "اختار إذا كنت طالب أو مدرس، وFOCUS AI هيوجهك لمساحة عمل مناسبة لدورك." },
+  "Student": { en: "Student", ar: "طالب" },
+  "Teacher": { en: "Teacher", ar: "مدرس" },
+  "Learn, practice, and track progress.": { en: "Learn, practice, and track progress.", ar: "اتعلم واتدرب وتابع تقدمك." },
+  "Plan lessons, create exams, and manage classes.": { en: "Plan lessons, create exams, and manage classes.", ar: "خطط للدروس وأنشئ الاختبارات وأدر الفصول." },
+  "AI learning assistant": { en: "AI learning assistant", ar: "مساعد التعلم الذكي" },
+  "Ask your tutor anything...": { en: "Ask your tutor anything...", ar: "اسأل المدرس الذكي عن أي حاجة..." },
+  "Send": { en: "Send", ar: "إرسال" },
+  "Gemini is thinking...": { en: "Gemini is thinking...", ar: "Gemini بيفكر..." },
+  "What are you learning today?": { en: "What are you learning today?", ar: "هتتعلم إيه النهارده؟" },
+  "Ask for an explanation, an example, or a step-by-step walkthrough.": { en: "Ask for an explanation, an example, or a step-by-step walkthrough.", ar: "اطلب شرح أو مثال أو توضيح خطوة بخطوة." },
+  "Your conversation is saved to your FOCUS AI account.": { en: "Your conversation is saved to your FOCUS AI account.", ar: "محادثتك بتتحفظ في حسابك على FOCUS AI." },
+  "Language": { en: "Language", ar: "اللغة" },
+  "Arabic": { en: "Arabic", ar: "العربية" },
+  "English": { en: "English", ar: "الإنجليزية" }
+};
+
+type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
+const LanguageContext = createContext<LanguageContextValue | null>(null);
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (!context) throw new Error("useLanguage must be used inside LanguageProvider");
+  return context;
+}
+
+export default function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>("en");
+  useEffect(() => {
+    const saved = window.localStorage.getItem("focus-language");
+    if (saved === "ar" || saved === "en") setLanguageState(saved);
+  }, []);
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    document.documentElement.dataset.language = language;
+    window.localStorage.setItem("focus-language", language);
+  }, [language]);
+  const value = useMemo(() => ({
+    language,
+    setLanguage: setLanguageState,
+    t: (value: string) => translations[value]?.[language] ?? value
+  }), [language]);
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+}
