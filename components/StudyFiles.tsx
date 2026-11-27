@@ -45,13 +45,13 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    setUploading(true);
     setError("");
     if (file.size > 30 * 1024 * 1024) {
       setError(t("Files must be 30 MB or smaller."));
       event.target.value = "";
       return;
     }
+    setUploading(true);
     const form = new FormData();
     form.append("tool", tool);
     form.append("originalName", file.name);
