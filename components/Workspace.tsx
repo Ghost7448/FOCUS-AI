@@ -42,7 +42,7 @@ const teacherItems: Item[] = [
 const adminItems: Item[] = [
   ...teacherItems,
   {icon:Users,label:"User Management",description:"Review user accounts and account status.",status:"available"},
-  {icon:Settings,label:"Platform Settings",description:"Manage platform configuration and usage limits.",status:"available"}
+  {icon:Settings,label:"Platform Settings",description:"Manage registration and account security settings.",status:"available"}
 ];
 
 export default function Workspace({ role, name }: { role: Role; name: string }) {
