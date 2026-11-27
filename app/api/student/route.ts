@@ -67,6 +67,9 @@ export async function POST(request: NextRequest) {
       "SELECT id,answer_key,points FROM exam_questions WHERE exam_id=? ORDER BY id", [parsed.data.examId]);
     if (!questions.length) return NextResponse.json({ error: "This exam has no questions." }, { status: 400 });
     const validIds = new Set(questions.map(q => Number(q.id)));
+    if (parsed.data.answers.length !== questions.length || new Set(parsed.data.answers.map(a => a.questionId)).size !== questions.length) {
+      return NextResponse.json({ error: "Please answer every question exactly once." }, { status: 400 });
+    }
     if (parsed.data.answers.some(a => !validIds.has(a.questionId))) return NextResponse.json({ error: "Some answers do not belong to this exam." }, { status: 400 });
     const answerMap = new Map(parsed.data.answers.map(a => [a.questionId,a.answer]));
     let score = 0;
