@@ -270,7 +270,7 @@ CREATE TABLE IF NOT EXISTS study_files (
  original_name VARCHAR(255) NOT NULL,
  mime_type VARCHAR(127) NOT NULL,
  file_size INT UNSIGNED NOT NULL,
- file_data LONGBLOB NOT NULL,
+ file_data LONGBLOB NOT NULL, compression_method ENUM('none','gzip') NOT NULL DEFAULT 'none',
  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
  CONSTRAINT study_files_user_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
  INDEX study_files_owner_idx (user_id, tool_type, created_at)
