@@ -123,7 +123,20 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Update password": { en: "Update password", ar: "تحديث كلمة المرور" },
   "Switch to light mode": { en: "Switch to light mode", ar: "التبديل للوضع الفاتح" },
   "Switch to dark mode": { en: "Switch to dark mode", ar: "التبديل للوضع الداكن" },
-  "Light": { en: "Light", ar: "فاتح" }, "Dark": { en: "Dark", ar: "داكن" }
+  "Light": { en: "Light", ar: "فاتح" }, "Dark": { en: "Dark", ar: "داكن" },
+  "Upload study material": { en: "Upload study material", ar: "ارفع ملف للمذاكرة" },
+  "PDF files up to 15 MB.": { en: "PDF files up to 15 MB.", ar: "ملفات PDF بحجم يصل إلى 15 ميجابايت." },
+  "PDF or audio files up to 15 MB.": { en: "PDF or audio files up to 15 MB.", ar: "ملفات PDF أو صوت بحجم يصل إلى 15 ميجابايت." },
+  "Choose file": { en: "Choose file", ar: "اختار ملف" },
+  "Uploading...": { en: "Uploading...", ar: "جاري الرفع..." },
+  "Your uploaded files": { en: "Your uploaded files", ar: "ملفاتك المرفوعة" },
+  "Loading files...": { en: "Loading files...", ar: "جاري تحميل الملفات..." },
+  "No files uploaded yet.": { en: "No files uploaded yet.", ar: "مفيش ملفات مرفوعة لسه." },
+  "Could not load your files.": { en: "Could not load your files.", ar: "مقدرناش نحمل ملفاتك." },
+  "Upload failed. Please try again.": { en: "Upload failed. Please try again.", ar: "الرفع فشل. حاول تاني." },
+  "Could not delete this file.": { en: "Could not delete this file.", ar: "مقدرناش نحذف الملف ده." },
+  "Download": { en: "Download", ar: "تحميل" },
+  "Delete": { en: "Delete", ar: "حذف" }
 };
 
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
