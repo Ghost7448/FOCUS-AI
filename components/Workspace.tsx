@@ -14,6 +14,7 @@ import { FocusTimer, ProgressDashboard } from "@/components/StudyTools";
 import QuizWorkspace from "@/components/QuizWorkspace";
 import TeacherTools from "@/components/TeacherTools";
 import StudentTools from "@/components/StudentTools";
+import AdminTools from "@/components/AdminTools";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -40,8 +41,8 @@ const teacherItems: Item[] = [
 ];
 const adminItems: Item[] = [
   ...teacherItems,
-  {icon:Users,label:"User Management",description:"Review user accounts and account status.",status:"planned"},
-  {icon:Settings,label:"Platform Settings",description:"Manage platform configuration and usage limits.",status:"planned"}
+  {icon:Users,label:"User Management",description:"Review user accounts and account status.",status:"available"},
+  {icon:Settings,label:"Platform Settings",description:"Manage platform configuration and usage limits.",status:"available"}
 ];
 
 export default function Workspace({ role, name }: { role: Role; name: string }) {
@@ -121,7 +122,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
             <div><p className="text-sm muted">{t(title)}</p><h2 className="text-2xl font-extrabold text-brand-900">{t(active.label)}</h2></div>
           </div>
           <p className="mt-5 max-w-2xl leading-7 muted">{t(active.description)}</p>
-          {active.label === "AI Personal Tutor" ? <TutorChat/> : active.label === "Lecture Assistant" ? <StudyFiles tool="lecture"/> : active.label === "Book Assistant" ? <StudyFiles tool="book"/> : active.label === "Smart Focus" ? <FocusTimer/> : active.label === "My Progress" ? <ProgressDashboard/> : active.label === "Smart Quizzes" ? <QuizWorkspace/> : ["Join a Class","My Exams"].includes(active.label) ? <StudentTools tool={active.label as "Join a Class"|"My Exams"}/> : ["My Classes","My Courses","AI Lesson Planner","AI Exam Creator","Results & Reports"].includes(active.label) ? <TeacherTools tool={active.label}/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
+          {active.label === "AI Personal Tutor" ? <TutorChat/> : active.label === "Lecture Assistant" ? <StudyFiles tool="lecture"/> : active.label === "Book Assistant" ? <StudyFiles tool="book"/> : active.label === "Smart Focus" ? <FocusTimer/> : active.label === "My Progress" ? <ProgressDashboard/> : active.label === "Smart Quizzes" ? <QuizWorkspace/> : ["Join a Class","My Exams"].includes(active.label) ? <StudentTools tool={active.label as "Join a Class"|"My Exams"}/> : ["My Classes","My Courses","AI Lesson Planner","AI Exam Creator","Results & Reports"].includes(active.label) ? <TeacherTools tool={active.label}/> : ["User Management","Platform Settings"].includes(active.label) ? <AdminTools tool={active.label as "User Management"|"Platform Settings"}/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
             <div className="flex items-center gap-2 font-bold text-brand-900"><LockKeyhole size={17}/> {t("This tool is not active yet")}</div>
             <p className="mt-2 text-sm leading-6 muted">{t("This feature is still being implemented. It will become available when its backend and user actions are ready.")}</p>
           </div>}
