@@ -5,7 +5,8 @@ import LanguageProvider from "@/components/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "FOCUS AI | Your Personal AI Learning Companion",
-  description: "One Platform. A smarter, calmer way to learn."
+  description: "One Platform. A smarter, calmer way to learn.",
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/favicon.svg" }
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
