@@ -44,6 +44,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "If your account needs verification, a new verification email has been sent." });
   } catch (error) {
     console.error("Resend verification error:", error);
-    return NextResponse.json({ error: "Unable to send the verification email right now. Check the server log and Resend configuration." }, { status: 503 });
+    return NextResponse.json({ error: "Unable to send the verification email right now. Check the server log and email delivery configuration." }, { status: 503 });
   }
 }
