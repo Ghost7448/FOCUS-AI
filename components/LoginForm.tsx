@@ -4,32 +4,30 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle, ArrowLeft } from "lucide-react";
 import Brand from "@/components/Brand";
-import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
-  const [busy,setBusy] = useState(false);
-  const [error,setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const params = useSearchParams();
 
   async function submit(data: FormData) {
     setBusy(true); setError("");
     try {
-      const supabase = createClient();
-      const { data: result, error } = await supabase.auth.signInWithPassword({
-        email: String(data.get("email")), password: String(data.get("password"))
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: String(data.get("email") || ""), password: String(data.get("password") || "") })
       });
-      if (error) throw error;
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", result.user.id).single();
-      const role = result.user?.app_metadata?.role === "admin" ? "admin" : profile?.role;
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Unable to log in.");
       const destination = params.get("next");
-      if (destination && destination.startsWith("/") && !destination.startsWith("//")) router.push(destination);
-      else if (role === "teacher") router.push("/teacher");
-      else if (role === "admin") router.push("/admin");
-      else router.push("/student");
+      const safeNext = destination && destination.startsWith("/") && !destination.startsWith("//") ? destination : result.destination;
+      router.replace(safeNext || "/student");
       router.refresh();
-    } catch(e) { setError(e instanceof Error ? e.message : "Unable to log in."); }
-    finally { setBusy(false); }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to log in.");
+    } finally { setBusy(false); }
   }
 
   return <section className="card w-full max-w-md p-6 sm:p-9">
@@ -40,9 +38,9 @@ export default function LoginForm() {
       <label className="block text-sm font-semibold">Email<input className="field mt-2" name="email" type="email" required autoComplete="email"/></label>
       <label className="block text-sm font-semibold">Password<input className="field mt-2" name="password" type="password" required autoComplete="current-password"/></label>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      <button disabled={busy} className="btn btn-primary w-full">{busy?<><LoaderCircle className="animate-spin" size={18}/> Signing in...</>:"Log in"}</button>
+      <button disabled={busy} className="btn btn-primary w-full">{busy ? <><LoaderCircle className="animate-spin" size={18}/> Signing in...</> : "Log in"}</button>
     </form>
+    <p className="mt-4 text-center text-sm"><Link className="font-semibold text-brand-600" href="/forgot-password">Forgot password?</Link></p>
     <p className="mt-5 text-center text-sm text-slate-600">New to FOCUS AI? <Link className="font-bold text-brand-600" href="/register">Create account</Link></p>
-    <p className="mt-4 text-center text-xs text-slate-500">Forgot password flow will be connected in the authentication setup phase.</p>
   </section>;
 }
