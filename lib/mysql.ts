@@ -5,13 +5,34 @@ declare global {
   var focusMysqlPool: Pool | undefined;
 }
 
+function readMysqlUrl() {
+  const value = process.env.MYSQL_URL;
+  if (!value) return null;
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("MYSQL_URL must be a valid MySQL connection URL.");
+  }
+
+  return {
+    host: url.hostname,
+    port: Number(url.port || 3306),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: decodeURIComponent(url.pathname.replace(/^\//, "")),
+  };
+}
+
 function createPool() {
-  const host = process.env.DB_HOST;
-  const user = process.env.DB_USER;
-  const database = process.env.DB_NAME;
+  const fromUrl = readMysqlUrl();
+  const host = process.env.MYSQLHOST || fromUrl?.host;
+  const user = process.env.MYSQLUSER || fromUrl?.user;
+  const database = process.env.MYSQL_DATABASE || fromUrl?.database;
 
   if (!host || !user || !database) {
-    throw new Error("MySQL is not configured. Set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD and DB_NAME.");
+    throw new Error("MySQL is not configured. Set MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD and MYSQL_DATABASE, or provide MYSQL_URL.");
   }
 
   const common: PoolOptions = {
@@ -22,9 +43,9 @@ function createPool() {
     timezone: "Z",
     decimalNumbers: true,
     host,
-    port: Number(process.env.DB_PORT || 3306),
+    port: Number(process.env.MYSQLPORT || fromUrl?.port || 3306),
     user,
-    password: process.env.DB_PASSWORD || "",
+    password: process.env.MYSQLPASSWORD ?? fromUrl?.password ?? "",
     database,
     ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : undefined,
   };
