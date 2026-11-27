@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle, ArrowLeft } from "lucide-react";
@@ -16,7 +16,9 @@ export default function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
 
-  async function submit(data: FormData) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
     setBusy(true); setError("");
     try {
       const response = await fetch("/api/auth/login", {
@@ -58,7 +60,7 @@ export default function LoginForm() {
     <p className="mt-2 text-slate-600">{t("Log in to your FOCUS AI workspace.")}</p>
     {params.get("verified") === "success" && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{t("Email verified successfully. You can log in now.")}</p>}
     {params.get("verified") === "invalid" && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{t("This verification link is invalid or expired. Contact support to request a new link.")}</p>}
-    <form action={submit} className="mt-7 space-y-4">
+    <form onSubmit={submit} className="mt-7 space-y-4">
       <label className="block text-sm font-semibold">{t("Email")}<input className="field mt-2" name="email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}/></label>
       <label className="block text-sm font-semibold">{t("Password")}<input className="field mt-2" name="password" type="password" required autoComplete="current-password"/></label>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
