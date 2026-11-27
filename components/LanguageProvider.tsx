@@ -156,7 +156,26 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Quiz attempts": { en: "Quiz attempts", ar: "محاولات الاختبارات" },
   "Average quiz score": { en: "Average quiz score", ar: "متوسط درجات الاختبارات" },
   "Last seven days": { en: "Last seven days", ar: "آخر 7 أيام" },
-  "Complete a focus session to see your activity here.": { en: "Complete a focus session to see your activity here.", ar: "كمّل جلسة تركيز علشان نشاطك يظهر هنا." }
+  "Complete a focus session to see your activity here.": { en: "Complete a focus session to see your activity here.", ar: "كمّل جلسة تركيز علشان نشاطك يظهر هنا." },
+  "Study quiz": { en: "Study quiz", ar: "اختبار مذاكرة" },
+  "Generate a quiz from your notes": { en: "Generate a quiz from your notes", ar: "أنشئ اختبار من ملاحظاتك" },
+  "Quiz title": { en: "Quiz title", ar: "عنوان الاختبار" },
+  "Paste your lesson or study notes here...": { en: "Paste your lesson or study notes here...", ar: "الصق الدرس أو ملاحظات المذاكرة هنا..." },
+  "characters · at least 30 required": { en: "characters · at least 30 required", ar: "حرف · مطلوب 30 حرف على الأقل" },
+  "Generating quiz...": { en: "Generating quiz...", ar: "جاري إنشاء الاختبار..." },
+  "Generate quiz": { en: "Generate quiz", ar: "إنشاء الاختبار" },
+  "Quiz generation failed.": { en: "Quiz generation failed.", ar: "فشل إنشاء الاختبار." },
+  "Create another quiz": { en: "Create another quiz", ar: "إنشاء اختبار آخر" },
+  "Your score": { en: "Your score", ar: "درجتك" },
+  "correct answers": { en: "correct answers", ar: "إجابات صحيحة" },
+  "Correct.": { en: "Correct.", ar: "إجابة صحيحة." },
+  "Correct answer:": { en: "Correct answer:", ar: "الإجابة الصحيحة:" },
+  "Submit answers": { en: "Submit answers", ar: "إرسال الإجابات" },
+  "Submitting...": { en: "Submitting...", ar: "جاري إرسال الإجابات..." },
+  "Could not submit this quiz.": { en: "Could not submit this quiz.", ar: "مقدرناش نبعت إجابات الاختبار." },
+  "Your saved quizzes": { en: "Your saved quizzes", ar: "اختباراتك المحفوظة" },
+  "questions": { en: "questions", ar: "أسئلة" },
+  "Open": { en: "Open", ar: "فتح" }
 };
 
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
