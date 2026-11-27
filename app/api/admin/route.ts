@@ -74,6 +74,7 @@ export async function POST(request:NextRequest){
         if(activeAdmins.length<=1){await connection.rollback();return NextResponse.json({error:"The platform must keep at least one active administrator."},{status:409});}
       }
       await connection.execute("UPDATE users SET role=?,status=?,updated_at=UTC_TIMESTAMP() WHERE id=?",[role,status,userId]);
+      if(status==="suspended") await connection.execute("DELETE FROM sessions WHERE user_id=?",[userId]);
       await connection.execute("INSERT INTO audit_logs(actor_user_id,action,entity_type,entity_id,metadata) VALUES(?,?,?,?,?)",
         [admin.id,"user_updated","user",userId,JSON.stringify({before:{role:target.role,status:target.status},after:{role,status}})]);
       await connection.commit();
