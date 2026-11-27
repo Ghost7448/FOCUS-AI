@@ -13,6 +13,7 @@ const defaults:SettingsState={allow_student_registration:true,allow_teacher_regi
 export default function AdminTools({tool}:{tool:"User Management"|"Platform Settings"}){
  const {t,language}=useLanguage();
  const [users,setUsers]=useState<AdminUser[]>([]);
+ const [currentAdminId,setCurrentAdminId]=useState<number|null>(null);
  const [settings,setSettings]=useState<SettingsState>(defaults);
  const [stats,setStats]=useState<Stats>({total_users:0,students:0,teachers:0,admins:0,suspended:0,total_classes:0,total_exams:0});
  const [loading,setLoading]=useState(true);
@@ -28,6 +29,7 @@ export default function AdminTools({tool}:{tool:"User Management"|"Platform Sett
    const data=await response.json();
    if(!response.ok)throw new Error(data.error||"Could not load admin data.");
    setUsers(data.users||[]);
+   setCurrentAdminId(Number(data.currentAdminId)||null);
    setStats(data.stats||stats);
    setSettings({
     allow_student_registration:data.settings?.allow_student_registration==="true",
@@ -70,10 +72,10 @@ export default function AdminTools({tool}:{tool:"User Management"|"Platform Sett
     <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b text-xs muted"><th className="p-3">{t("User")}</th><th className="p-3">{t("Role")}</th><th className="p-3">{t("Status")}</th><th className="p-3">{t("Email verified")}</th><th className="p-3">{t("Action")}</th></tr></thead><tbody>
      {users.map(user=>{const draft=changes[user.id]||{role:user.role,status:user.status==="suspended"?"suspended" as const:"active" as const};return <tr key={user.id} className="border-b">
       <td className="p-3"><b>{user.full_name}</b><p className="text-xs muted">{user.email}</p></td>
-      <td className="p-3"><select className="field min-w-28" value={draft.role} onChange={e=>setChanges(prev=>({...prev,[user.id]:{...draft,role:e.target.value as AdminUser["role"]}}))}><option value="student">{t("Student")}</option><option value="teacher">{t("Teacher")}</option><option value="admin">{t("Admin")}</option></select></td>
-      <td className="p-3"><select className="field min-w-28" value={draft.status} onChange={e=>setChanges(prev=>({...prev,[user.id]:{...draft,status:e.target.value as "active"|"suspended"}}))}><option value="active">{t("Active")}</option><option value="suspended">{t("Suspended")}</option></select></td>
+      <td className="p-3"><select disabled={user.id===currentAdminId} className="field min-w-28" value={draft.role} onChange={e=>setChanges(prev=>({...prev,[user.id]:{...draft,role:e.target.value as AdminUser["role"]}}))}><option value="student">{t("Student")}</option><option value="teacher">{t("Teacher")}</option><option value="admin">{t("Admin")}</option></select></td>
+      <td className="p-3"><select disabled={user.id===currentAdminId} className="field min-w-28" value={draft.status} onChange={e=>setChanges(prev=>({...prev,[user.id]:{...draft,status:e.target.value as "active"|"suspended"}}))}><option value="active">{t("Active")}</option><option value="suspended">{t("Suspended")}</option></select></td>
       <td className="p-3">{user.email_verified? t("Yes"):t("No")}</td>
-      <td className="p-3"><button type="button" disabled={busy|| (draft.role===user.role&&draft.status===user.status)} onClick={()=>void send({action:"update_user",userId:user.id,...draft})} className="btn btn-primary">{t("Save")}</button></td>
+      <td className="p-3"><button type="button" disabled={busy||user.id===currentAdminId|| (draft.role===user.role&&draft.status===user.status)} onClick={()=>void send({action:"update_user",userId:user.id,...draft})} className="btn btn-primary">{t("Save")}</button></td>
      </tr>;})}
     </tbody></table></div>
     {users.length===0&&<p className="p-5 text-sm muted">{t("No user accounts found.")}</p>}
