@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
-import { Download, FileAudio, FileText, Loader2, Trash2, Upload } from "lucide-react";
+import { Download, FileAudio, FileText, Loader2, Sparkles, Trash2, Upload } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type ToolType = "lecture" | "book";
@@ -12,6 +12,7 @@ type StudyFile = {
   mime_type: string;
   file_size: number;
   created_at: string;
+  analysis: string | null;
 };
 
 export default function StudyFiles({ tool }: { tool: ToolType }) {
@@ -57,6 +58,21 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
     } finally {
       setUploading(false);
       event.target.value = "";
+    }
+  }
+
+  async function analyzeFile(id: number) {
+    setBusyId(id);
+    setError("");
+    try {
+      const response = await fetch("/api/study-files/" + id + "/analyze", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t("Analysis failed. Please try again."));
+      setFiles((current) => current.map((file) => file.id === id ? { ...file, analysis: data.analysis } : file));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("Analysis failed. Please try again."));
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -107,19 +123,26 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
       </div>
       {loading ? <div className="flex items-center gap-2 py-6 text-sm muted"><Loader2 size={17} className="animate-spin"/>{t("Loading files...")}</div>
       : files.length === 0 ? <div className="rounded-2xl border border-black/10 p-6 text-center text-sm muted">{t("No files uploaded yet.")}</div>
-      : <div className="space-y-2">
-        {files.map((file) => <div key={file.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-black/10 bg-white/5 p-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-800/10 text-amber-800">
-            {file.mime_type.startsWith("audio/") ? <FileAudio size={20}/> : <FileText size={20}/>}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-brand-900">{file.original_name}</p>
-            <p className="mt-1 text-xs muted">{formatSize(file.file_size)} · {new Date(file.created_at).toLocaleDateString(language === "ar" ? "ar-EG" : "en")}</p>
+      : <div className="space-y-3">
+        {files.map((file) => <div key={file.id} className="rounded-2xl border border-black/10 bg-white/5 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-800/10 text-amber-800">
+              {file.mime_type.startsWith("audio/") ? <FileAudio size={20}/> : <FileText size={20}/>}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-brand-900">{file.original_name}</p>
+              <p className="mt-1 text-xs muted">{formatSize(file.file_size)} · {new Date(file.created_at).toLocaleDateString(language === "ar" ? "ar-EG" : "en")}</p>
+            </div>
+            <button type="button" disabled={busyId === file.id} onClick={() => void analyzeFile(file.id)} className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-amber-900 transition hover:bg-amber-800/10 disabled:opacity-50">
+              {busyId === file.id ? <Loader2 size={16} className="animate-spin"/> : <Sparkles size={16}/>}
+              {file.analysis ? t("Analyze again") : t("Analyze with Gemini")}
+            </button>
+            <a className="rounded-lg p-2 text-brand-800 transition hover:bg-amber-800/10" href={"/api/study-files/" + file.id} aria-label={t("Download")} title={t("Download")}><Download size={18}/></a>
+            <button type="button" disabled={busyId === file.id} onClick={() => void removeFile(file.id)} className="rounded-lg p-2 text-red-600 transition hover:bg-red-500/10 disabled:opacity-50" aria-label={t("Delete")} title={t("Delete")}>
+              {busyId === file.id ? <Loader2 size={18} className="animate-spin"/> : <Trash2 size={18}/>}
+            </button>
           </div>
-          <a className="rounded-lg p-2 text-brand-800 transition hover:bg-amber-800/10" href={"/api/study-files/" + file.id} aria-label={t("Download")} title={t("Download")}><Download size={18}/></a>
-          <button type="button" disabled={busyId === file.id} onClick={() => void removeFile(file.id)} className="rounded-lg p-2 text-red-600 transition hover:bg-red-500/10 disabled:opacity-50" aria-label={t("Delete")} title={t("Delete")}>
-            {busyId === file.id ? <Loader2 size={18} className="animate-spin"/> : <Trash2 size={18}/>}
-          </button>
+          {file.analysis && <div className="mt-4 whitespace-pre-wrap rounded-xl bg-amber-900/5 p-4 text-sm leading-7 text-brand-900">{file.analysis}</div>}
         </div>)}
       </div>}
     </div>
