@@ -119,3 +119,26 @@ article:hover { transform: translateY(-4px); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Consistent warm-brown surfaces, including remaining Tailwind blue/brand utilities. */
+.bg-brand-700 { background: linear-gradient(135deg, #8b6045, #68432f) !important; }
+.text-blue-100 { color: #f4e5d8 !important; }
+.workspace-shell { color: var(--text); }
+.workspace-sidebar { background: var(--surface); border-color: var(--border); border-right: 1px solid var(--border); backdrop-filter: blur(24px) saturate(145%); }
+.workspace-nav-item { width:100%; display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; text-align:left; color:var(--muted); font-size:14px; transition:background .25s ease,color .25s ease,transform .25s ease; }
+.workspace-nav-item:hover { background:var(--accent-soft); color:var(--accent-strong); transform:translateX(3px); }
+.workspace-nav-item.is-active { background:var(--accent-soft); color:var(--accent-strong); font-weight:800; }
+.workspace-signout { display:flex; align-items:center; gap:9px; padding:10px 12px; color:var(--muted); font-size:14px; font-weight:700; border-radius:12px; }
+.workspace-signout:hover { background:var(--accent-soft); color:var(--accent-strong); }
+.workspace-signout:disabled { opacity:.55; cursor:wait; }
+.workspace-hero { background:linear-gradient(125deg,#956b4e,#68432f 68%,#493326); box-shadow:0 22px 55px rgba(104,67,47,.2); }
+.role-pill { border:1px solid var(--border); background:var(--accent-soft); color:var(--accent-strong); border-radius:999px; padding:9px 15px; font-size:13px; font-weight:800; }
+.workspace-icon { background:var(--accent-soft); color:var(--accent-strong); border:1px solid var(--border); }
+.workspace-feature-card { display:block; width:100%; cursor:pointer; color:var(--text); }
+.workspace-feature-card:focus-visible,.workspace-nav-item:focus-visible,.workspace-signout:focus-visible,.workspace-back:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.workspace-status { color:var(--muted); font-size:12px; font-weight:700; }
+.workspace-back { color:var(--accent-strong); font-size:14px; font-weight:800; }
+.workspace-coming { background:var(--accent-soft); border:1px solid var(--border); }
+.dark .bg-brand-700 { background:linear-gradient(135deg,#684832,#38271e) !important; }
+.dark .workspace-hero { background:linear-gradient(125deg,#79563f,#493326 68%,#302119); }
+@media (max-width:767px) { .workspace-sidebar { border-right:0; border-bottom:1px solid var(--border); } }
