@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { BookOpen, ClipboardCheck, LoaderCircle, Users } from "lucide-react";
+import { ClipboardCheck, LoaderCircle } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type StudentQuestion = { id:number; exam_id:number; question_text:string; options:string[]; points:number };
