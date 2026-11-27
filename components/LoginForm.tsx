@@ -56,15 +56,15 @@ export default function LoginForm() {
     <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600"><ArrowLeft size={16}/> {t("Back to home")}</Link>
     <Brand/><h1 className="mt-7 text-3xl font-extrabold text-brand-900">{t("Welcome back")}</h1>
     <p className="mt-2 text-slate-600">{t("Log in to your FOCUS AI workspace.")}</p>
-    {params.get("verified") === "success" && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">Email verified successfully. You can log in now.</p>}
-    {params.get("verified") === "invalid" && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">This verification link is invalid or expired. Contact support to request a new link.</p>}
+    {params.get("verified") === "success" && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{t("Email verified successfully. You can log in now.")}</p>}
+    {params.get("verified") === "invalid" && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{t("This verification link is invalid or expired. Contact support to request a new link.")}</p>}
     <form action={submit} className="mt-7 space-y-4">
       <label className="block text-sm font-semibold">{t("Email")}<input className="field mt-2" name="email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}/></label>
       <label className="block text-sm font-semibold">{t("Password")}<input className="field mt-2" name="password" type="password" required autoComplete="current-password"/></label>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {notice && <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
-      {error.toLowerCase().includes("verify your email") && <button type="button" onClick={resendVerification} disabled={resending} className="w-full text-sm font-semibold text-brand-600 underline disabled:opacity-50">{resending ? "Sending..." : "Resend verification email"}</button>}
-      <button disabled={busy} className="btn btn-primary w-full">{busy ? <><LoaderCircle className="animate-spin" size={18}/> Signing in...</> : t("Log in")}</button>
+      {error.toLowerCase().includes("verify your email") && <button type="button" onClick={resendVerification} disabled={resending} className="w-full text-sm font-semibold text-brand-600 underline disabled:opacity-50">{resending ? t("Sending...") : t("Resend verification email")}</button>}
+      <button disabled={busy} className="btn btn-primary w-full">{busy ? <><LoaderCircle className="animate-spin" size={18}/> {t("Signing in...")}</> : t("Log in")}</button>
     </form>
     <p className="mt-4 text-center text-sm"><Link className="font-semibold text-brand-600" href="/forgot-password">{t("Forgot password?")}</Link></p>
     <p className="mt-5 text-center text-sm text-slate-600">{t("New to FOCUS AI?")} <Link className="font-bold text-brand-600" href="/register">{t("Create account")}</Link></p>
