@@ -8,6 +8,9 @@ import Brand from "@/components/Brand";
 export default function LoginForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [resending, setResending] = useState(false);
+  const [notice, setNotice] = useState("");
   const router = useRouter();
   const params = useSearchParams();
 
@@ -30,6 +33,23 @@ export default function LoginForm() {
     } finally { setBusy(false); }
   }
 
+  async function resendVerification() {
+    if (!email.trim()) { setError("Enter your email address first."); return; }
+    setResending(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not resend verification email.");
+      setNotice(result.message || "If your account needs verification, a new email has been sent.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not resend verification email.");
+    } finally { setResending(false); }
+  }
+
   return <section className="card w-full max-w-md p-6 sm:p-9">
     <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600"><ArrowLeft size={16}/> Back to home</Link>
     <Brand/><h1 className="mt-7 text-3xl font-extrabold text-brand-900">Welcome back</h1>
@@ -37,9 +57,11 @@ export default function LoginForm() {
     {params.get("verified") === "success" && <p role="status" className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">Email verified successfully. You can log in now.</p>}
     {params.get("verified") === "invalid" && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">This verification link is invalid or expired. Contact support to request a new link.</p>}
     <form action={submit} className="mt-7 space-y-4">
-      <label className="block text-sm font-semibold">Email<input className="field mt-2" name="email" type="email" required autoComplete="email"/></label>
+      <label className="block text-sm font-semibold">Email<input className="field mt-2" name="email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}/></label>
       <label className="block text-sm font-semibold">Password<input className="field mt-2" name="password" type="password" required autoComplete="current-password"/></label>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice && <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
+      {error.toLowerCase().includes("verify your email") && <button type="button" onClick={resendVerification} disabled={resending} className="w-full text-sm font-semibold text-brand-600 underline disabled:opacity-50">{resending ? "Sending..." : "Resend verification email"}</button>}
       <button disabled={busy} className="btn btn-primary w-full">{busy ? <><LoaderCircle className="animate-spin" size={18}/> Signing in...</> : "Log in"}</button>
     </form>
     <p className="mt-4 text-center text-sm"><Link className="font-semibold text-brand-600" href="/forgot-password">Forgot password?</Link></p>
