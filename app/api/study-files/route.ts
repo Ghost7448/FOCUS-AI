@@ -20,6 +20,7 @@ type StudyFileRow = RowDataPacket & {
   mime_type: string;
   file_size: number;
   created_at: Date;
+  analysis: string | null;
 };
 
 export async function GET(request: NextRequest) {
@@ -32,8 +33,9 @@ export async function GET(request: NextRequest) {
   try {
     await ensureStudyFilesTable();
     const [rows] = await db.execute<StudyFileRow[]>(
-      "SELECT id, tool_type, original_name, mime_type, file_size, created_at " +
-      "FROM study_files WHERE user_id = ? AND tool_type = ? ORDER BY created_at DESC LIMIT 100",
+      "SELECT f.id, f.tool_type, f.original_name, f.mime_type, f.file_size, f.created_at, " +
+      "(SELECT a.analysis FROM study_file_analyses a WHERE a.file_id = f.id ORDER BY a.created_at DESC, a.id DESC LIMIT 1) AS analysis " +
+      "FROM study_files f WHERE f.user_id = ? AND f.tool_type = ? ORDER BY f.created_at DESC LIMIT 100",
       [user.id, tool]
     );
     return NextResponse.json({ files: rows });
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
     const name = file.name.trim().slice(0, 255);
     const extension = name.toLowerCase().split(".").pop() || "";
     const isPdf = extension === "pdf" &&
-      (file.type === "application/pdf" || file.type === "application/octet-stream");
+      (!file.type || file.type === "application/pdf" || file.type === "application/octet-stream");
     const audioExtensions = ["mp3", "m4a", "mp4", "wav", "webm", "ogg", "aac", "flac"];
     const isAudio = tool === "lecture" && audioExtensions.includes(extension) && AUDIO_TYPES.has(file.type);
 
@@ -77,6 +79,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "The selected file is not a valid PDF." }, { status: 415 });
     }
     const mimeType = isPdf ? "application/pdf" : file.type;
+    const [countRows] = await db.execute<RowDataPacket[]>(
+      "SELECT COUNT(*) AS total FROM study_files WHERE user_id = ? AND tool_type = ?",
+      [user.id, tool]
+    );
+    if (Number(countRows[0]?.total || 0) >= 100) {
+      return NextResponse.json({ error: "You can store up to 100 files in each assistant." }, { status: 409 });
+    }
+
     const [result] = await db.execute<ResultSetHeader>(
       "INSERT INTO study_files (user_id, tool_type, original_name, mime_type, file_size, file_data) " +
       "VALUES (?, ?, ?, ?, ?, ?)",
