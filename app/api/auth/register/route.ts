@@ -6,6 +6,7 @@ import { registerSchema } from "@/lib/auth-validation";
 import { hashToken } from "@/lib/auth";
 import { sendSecurityEmail } from "@/lib/email";
 import { hasSameOrigin } from "@/lib/security";
+import { getPlatformSettings } from "@/lib/platform-settings";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,10 @@ export async function POST(request: NextRequest) {
     const parsed = registerSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid registration details." }, { status: 400 });
     const input = parsed.data;
+    const platform = await getPlatformSettings();
+    if (platform.maintenance_mode === "true") return NextResponse.json({ error: "Registration is temporarily unavailable during maintenance." }, { status: 503 });
+    if (input.role === "student" && platform.allow_student_registration !== "true") return NextResponse.json({ error: "Student registration is currently disabled." }, { status: 403 });
+    if (input.role === "teacher" && platform.allow_teacher_registration !== "true") return NextResponse.json({ error: "Teacher registration is currently disabled." }, { status: 403 });
     if (input.role === "teacher" && !input.teachingSubject?.trim()) return NextResponse.json({ error: "Please enter your teaching subject." }, { status: 400 });
     const ip = (request.headers.get("x-forwarded-for") || "unknown").split(",")[0].trim().slice(0,64);
     const [rateRows] = await db.execute("SELECT COUNT(*) AS total FROM auth_attempts WHERE ip_address = ? AND attempted_at > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 HOUR)", [ip]);
@@ -22,7 +27,7 @@ export async function POST(request: NextRequest) {
     const [existing] = await db.execute("SELECT id FROM users WHERE email = ? LIMIT 1", [input.email]);
     if ((existing as unknown[]).length) return NextResponse.json({ error: "An account with this email already exists." }, { status: 409 });
     const passwordHash = await bcrypt.hash(input.password,12);
-    const verificationRequired = process.env.NODE_ENV === "production" || process.env.EMAIL_VERIFICATION_REQUIRED !== "false";
+    const verificationRequired = platform.require_email_verification === "true" && (process.env.NODE_ENV === "production" || process.env.EMAIL_VERIFICATION_REQUIRED !== "false");
     const [result] = await db.execute(
       `INSERT INTO users(email,password_hash,full_name,role,preferred_language,education_level,grade,teaching_subject,institution,email_verified)
        VALUES(?,?,?,?,?,?,?,?,?,?)`,
