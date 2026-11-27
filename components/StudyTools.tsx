@@ -69,7 +69,7 @@ export function FocusTimer() {
   }, [active]);
 
   useEffect(() => {
-    if (active && remaining === 0 && !loading && !busy) void finishSession("completed");
+    if (active && remaining === 0 && !loading && !busy && Date.now() >= Date.parse(active.started_at) + active.planned_minutes * 60000) void finishSession("completed");
   }, [active, remaining, loading, busy, finishSession]);
 
   async function startSession() {
