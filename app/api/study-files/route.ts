@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
-import { ensureStudyFilesTable } from "@/lib/study-files";
+import { ensureStudyFilesTable, MAX_STUDY_FILE_SIZE, restoreStudyFile } from "@/lib/study-files";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 const AUDIO_TYPES = new Set([
   "audio/mpeg", "audio/mp3", "audio/mp4", "audio/x-m4a", "audio/wav",
   "audio/x-wav", "audio/webm", "audio/ogg", "audio/aac", "audio/flac"
@@ -56,16 +56,21 @@ export async function POST(request: NextRequest) {
     if ((tool !== "lecture" && tool !== "book") || !(file instanceof File)) {
       return NextResponse.json({ error: "Select a valid file and destination." }, { status: 400 });
     }
-    if (file.size < 1 || file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "Files must be smaller than 10 MB." }, { status: 413 });
+    const compression = form.get("compression")?.toString() || "none";
+    const originalSize = Number(form.get("originalSize") || file.size);
+    if (file.size < 1 || file.size > MAX_STUDY_FILE_SIZE || !Number.isSafeInteger(originalSize) || originalSize < 1 || originalSize > MAX_STUDY_FILE_SIZE) {
+      return NextResponse.json({ error: "Files must be 30 MB or smaller." }, { status: 413 });
+    }
+    if (compression !== "none" && compression !== "gzip") {
+      return NextResponse.json({ error: "Invalid compression format." }, { status: 400 });
     }
 
-    const name = file.name.trim().slice(0, 255);
+    const name = (form.get("originalName")?.toString() || file.name).trim().slice(0, 255);
     const extension = name.toLowerCase().split(".").pop() || "";
-    const isPdf = extension === "pdf" &&
-      (!file.type || file.type === "application/pdf" || file.type === "application/octet-stream");
+    const mimeType = (form.get("originalMimeType")?.toString() || file.type || "").toLowerCase();
+    const isPdf = extension === "pdf" && mimeType === "application/pdf";
     const audioExtensions = ["mp3", "m4a", "mp4", "wav", "webm", "ogg", "aac", "flac"];
-    const isAudio = tool === "lecture" && audioExtensions.includes(extension) && AUDIO_TYPES.has(file.type);
+    const isAudio = tool === "lecture" && audioExtensions.includes(extension) && AUDIO_TYPES.has(mimeType);
 
     if (tool === "book" && !isPdf) {
       return NextResponse.json({ error: "Book Assistant accepts PDF files only." }, { status: 415 });
@@ -75,7 +80,16 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = Buffer.from(await file.arrayBuffer());
-    if (isPdf && bytes.subarray(0, 5).toString("ascii") !== "%PDF-") {
+    if (compression === "gzip" && (bytes.length < 18 || bytes[0] !== 0x1f || bytes[1] !== 0x8b)) {
+      return NextResponse.json({ error: "The compressed file is invalid." }, { status: 415 });
+    }
+    let originalBytes: Buffer;
+    try { originalBytes = restoreStudyFile(bytes, compression); }
+    catch { return NextResponse.json({ error: "The compressed file could not be verified." }, { status: 415 }); }
+    if (originalBytes.length !== originalSize) {
+      return NextResponse.json({ error: "The uploaded file size did not match its original size." }, { status: 400 });
+    }
+    if (isPdf && originalBytes.subarray(0, 5).toString("ascii") !== "%PDF-") {
       return NextResponse.json({ error: "The selected file is not a valid PDF." }, { status: 415 });
     }
     const mimeType = isPdf ? "application/pdf" : file.type;
@@ -88,12 +102,12 @@ export async function POST(request: NextRequest) {
     }
 
     const [result] = await db.execute<ResultSetHeader>(
-      "INSERT INTO study_files (user_id, tool_type, original_name, mime_type, file_size, file_data) " +
-      "VALUES (?, ?, ?, ?, ?, ?)",
-      [user.id, tool, name, mimeType, bytes.length, bytes]
+      "INSERT INTO study_files (user_id, tool_type, original_name, mime_type, file_size, file_data, compression_method) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [user.id, tool, name, mimeType, originalBytes.length, bytes, compression]
     );
     return NextResponse.json({
-      file: { id: result.insertId, tool_type: tool, original_name: name, mime_type: mimeType, file_size: bytes.length }
+      file: { id: result.insertId, tool_type: tool, original_name: name, mime_type: mimeType, file_size: originalBytes.length, compressed: compression === "gzip" }
     }, { status: 201 });
   } catch (error) {
     console.error("Study file upload failed:", error);
