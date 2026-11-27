@@ -83,8 +83,8 @@ export default function TeacherTools({ tool }: { tool: string }) {
   }
   async function savePlan() {
     if(!selectedClass || !plan) return;
-    await send({action:"create_lesson",classId:Number(selectedClass),title:lessonTitle || topic,content:plan,publish:false});
-    setPlan("");
+    const result = await send({action:"create_lesson",classId:Number(selectedClass),title:lessonTitle || topic,content:plan,publish:false});
+    if (result) setPlan("");
   }
   async function createExam(e:FormEvent<HTMLFormElement>) {
     e.preventDefault(); if(!selectedClass) return setError("Create a class first.");
@@ -92,7 +92,6 @@ export default function TeacherTools({ tool }: { tool: string }) {
     if(result?.questions) setGeneratedQuestions(result.questions);
   }
 
-  const heading = tool;
   const noClasses = classes.length===0;
   return <div className="mt-7 space-y-6" dir={language==="ar"?"rtl":"ltr"}>
     {error && <p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
