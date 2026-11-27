@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { GraduationCap, Presentation, ArrowLeft, LoaderCircle } from "lucide-react";
 import Brand from "@/components/Brand";
@@ -14,7 +14,9 @@ export default function RegisterForm() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  async function submit(formData: FormData) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     setBusy(true); setError(""); setMessage("");
     const payload = {
       fullName: String(formData.get("fullName") || "").trim(),
@@ -51,7 +53,7 @@ export default function RegisterForm() {
       <button type="button" onClick={() => setRole("student")} className={`rounded-xl border p-4 text-left ${role === "student" ? "border-brand-500 bg-blue-50" : "border-slate-200"}`}><GraduationCap className="text-brand-600"/><b className="mt-2 block">{t("Student")}</b><small className="text-slate-500">{t("Learn and practice")}</small></button>
       <button type="button" onClick={() => setRole("teacher")} className={`rounded-xl border p-4 text-left ${role === "teacher" ? "border-brand-500 bg-blue-50" : "border-slate-200"}`}><Presentation className="text-brand-600"/><b className="mt-2 block">{t("Teacher")}</b><small className="text-slate-500">{t("Teach and manage classes")}</small></button>
     </div>
-    <form action={submit} className="mt-6 space-y-4">
+    <form onSubmit={submit} className="mt-6 space-y-4">
       <label className="block text-sm font-semibold">{t("Full name")}<input className="field mt-2" name="fullName" required autoComplete="name"/></label>
       <label className="block text-sm font-semibold">{t("Email")}<input className="field mt-2" name="email" type="email" required autoComplete="email"/></label>
       {role === "student" ? <>
