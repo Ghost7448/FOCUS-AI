@@ -258,3 +258,38 @@ body {
   body { animation:none; }
   .workspace-hero::after { animation:none; }
 }
+
+/* Workspace preferences stay together at the bottom of the sidebar. */
+.workspace-sidebar-bottom { margin-top:auto; padding-top:18px; }
+.workspace-preferences {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+}
+.workspace-preferences .theme-toggle,
+.workspace-preferences .language-toggle {
+  position:static;
+  inset:auto;
+  z-index:auto;
+  flex:1;
+  min-width:0;
+  min-height:44px;
+  height:44px;
+  padding:0 12px;
+  white-space:nowrap;
+  box-shadow:0 8px 24px rgba(57,38,25,.10),inset 0 1px 0 var(--glass-highlight);
+}
+.workspace-preferences .theme-toggle { justify-content:center; }
+.workspace-preferences .language-toggle { justify-content:center; }
+@media (max-width:767px) {
+  .workspace-preferences .theme-toggle,
+  .workspace-preferences .language-toggle {
+    position:static;
+    bottom:auto;
+    min-height:44px;
+    padding:0 12px;
+  }
+}
