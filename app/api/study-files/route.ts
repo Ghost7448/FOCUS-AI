@@ -7,7 +7,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MAX_FILE_SIZE = 15 * 1024 * 1024;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const AUDIO_TYPES = new Set([
   "audio/mpeg", "audio/mp3", "audio/mp4", "audio/x-m4a", "audio/wav",
   "audio/x-wav", "audio/webm", "audio/ogg", "audio/aac", "audio/flac"
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Select a valid file and destination." }, { status: 400 });
     }
     if (file.size < 1 || file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "Files must be smaller than 15 MB." }, { status: 413 });
+      return NextResponse.json({ error: "Files must be smaller than 10 MB." }, { status: 413 });
     }
 
     const name = file.name.trim().slice(0, 255);
