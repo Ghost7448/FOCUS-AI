@@ -64,7 +64,7 @@ export default function LoginForm() {
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {notice && <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</p>}
       {error.toLowerCase().includes("verify your email") && <button type="button" onClick={resendVerification} disabled={resending} className="w-full text-sm font-semibold text-brand-600 underline disabled:opacity-50">{resending ? "Sending..." : "Resend verification email"}</button>}
-      <button disabled={busy} className="btn btn-primary w-full">{busy ? <><LoaderCircle className="animate-spin" size={18}/> Signing in...</> : "Log in"}</button>
+      <button disabled={busy} className="btn btn-primary w-full">{busy ? <><LoaderCircle className="animate-spin" size={18}/> Signing in...</> : t("Log in")}</button>
     </form>
     <p className="mt-4 text-center text-sm"><Link className="font-semibold text-brand-600" href="/forgot-password">{t("Forgot password?")}</Link></p>
     <p className="mt-5 text-center text-sm text-slate-600">{t("New to FOCUS AI?")} <Link className="font-bold text-brand-600" href="/register">{t("Create account")}</Link></p>
