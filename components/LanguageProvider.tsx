@@ -54,7 +54,6 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Explore features": { en: "Explore features", ar: "استكشف المميزات" },
   "Features": { en: "Features", ar: "المميزات" },
   "How it works": { en: "How it works", ar: "طريقة العمل" },
-  "Log in": { en: "Log in", ar: "تسجيل الدخول" },
   "Get started": { en: "Get started", ar: "ابدأ الآن" },
   "WHAT YOU CAN DO": { en: "WHAT YOU CAN DO", ar: "إيه اللي تقدر تعمله" },
   "Tools for learning and teaching": { en: "Tools for learning and teaching", ar: "أدوات للتعلم والتعليم" },
@@ -75,7 +74,7 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Your conversation is saved to your FOCUS AI account.": { en: "Your conversation is saved to your FOCUS AI account.", ar: "محادثتك بتتحفظ في حسابك على FOCUS AI." },
   "Language": { en: "Language", ar: "اللغة" },
   "Arabic": { en: "Arabic", ar: "العربية" },
-  "English": { en: "English", ar: "الإنجليزية" }
+  "English": { en: "English", ar: "الإنجليزية" },
   "Understand lessons with explanations adapted to your learning level.": { en: "Understand lessons with explanations adapted to your learning level.", ar: "افهم دروسك من خلال شروحات تناسب مستواك." },
   "Turn permitted lecture recordings into searchable notes and summaries.": { en: "Turn permitted lecture recordings into searchable notes and summaries.", ar: "حوّل تسجيلات المحاضرات المسموح بها إلى ملاحظات وملخصات قابلة للبحث." },
   "Ask questions about your PDF materials and find supporting pages.": { en: "Ask questions about your PDF materials and find supporting pages.", ar: "اسأل عن ملفات PDF واعثر على الصفحات الداعمة للإجابة." },
@@ -103,15 +102,12 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Teaching subject / specialization": { en: "Teaching subject / specialization", ar: "المادة / التخصص" },
   "School / Institution (optional)": { en: "School / Institution (optional)", ar: "المدرسة / المؤسسة (اختياري)" },
   "Confirm password": { en: "Confirm password", ar: "تأكيد كلمة المرور" },
-  "Create free account": { en: "Create free account", ar: "إنشاء حساب مجاني" },
   "Already have an account?": { en: "Already have an account?", ar: "لديك حساب بالفعل؟" },
   "Learn and practice": { en: "Learn and practice", ar: "اتعلم واتدرب" },
   "Teach and manage classes": { en: "Teach and manage classes", ar: "درّس وأدر الفصول" },
   "School": { en: "School", ar: "مدرسة" },
   "University": { en: "University", ar: "جامعة" },
   "Both": { en: "Both", ar: "كلاهما" },
-  "English": { en: "English", ar: "الإنجليزية" },
-  "Arabic": { en: "Arabic", ar: "العربية" }
 
 };
 
