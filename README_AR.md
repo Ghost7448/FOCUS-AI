@@ -11,13 +11,16 @@
 1. أنشئ قاعدة بيانات MySQL فارغة باسم `focus_ai`.
 2. شغّل الملف `database/schema.sql` على قاعدة البيانات.
 3. انسخ `.env.example` إلى `.env.local`.
-4. اضبط اتصال MySQL باستخدام المتغيرات المنفصلة التالية:
-   - `DB_HOST`: عنوان خادم MySQL، مثل `localhost`.
-   - `DB_PORT`: المنفذ، غالبًا `3306`.
-   - `DB_USER`: اسم مستخدم MySQL.
-   - `DB_PASSWORD`: كلمة مرور مستخدم MySQL.
-   - `DB_NAME`: اسم قاعدة البيانات، مثل `focus_ai`.
+4. اضبط اتصال MySQL باستخدام المتغيرات التالية:
+   - `MYSQL_DATABASE`: اسم قاعدة البيانات، مثل `focus_ai`.
+   - `MYSQL_URL`: رابط اتصال MySQL كامل (اختياري عند استخدام متغيرات الاتصال المنفصلة).
+   - `MYSQLHOST`: عنوان خادم MySQL، مثل `localhost`.
+   - `MYSQLPASSWORD`: كلمة مرور مستخدم MySQL.
+   - `MYSQLPORT`: منفذ MySQL، غالبًا `3306`.
+   - `MYSQLUSER`: اسم مستخدم MySQL.
    - `DB_SSL`: استخدم `true` إذا كان مزود قاعدة البيانات يتطلب SSL، وإلا `false`.
+   - `DB_CONNECTION_LIMIT`: الحد الأقصى لاتصالات قاعدة البيانات، والافتراضي `10`.
+   عند توفير المتغيرات المنفصلة، تكون لها الأولوية على القيم الموجودة داخل `MYSQL_URL`. ويمكن استخدام `MYSQL_URL` وحده بدلًا منها.
 5. أنشئ API Key من لوحة Resend، ثم اضبط `RESEND_API_KEY` بالمفتاح و`RESEND_FROM` بعنوان مرسل تابع لدومين تم التحقق منه في Resend، مثل `FOCUS AI <no-reply@example.com>`.
 6. اضبط `APP_URL` على رابط الموقع.
 7. نفّذ `npm install` ثم `npm run dev`.
@@ -34,7 +37,7 @@
 - يجب فحص ملكية البيانات والصلاحيات داخل كل API/Server Action قبل إضافة أي ميزة جديدة.
 
 ## إنشاء أول Admin
-اضبط `DB_HOST` و`DB_PORT` و`DB_USER` و`DB_PASSWORD` و`DB_NAME` في `.env.local`، ثم اضبط `ADMIN_EMAIL` و`ADMIN_PASSWORD` و`ADMIN_NAME` في بيئة الطرفية ونفّذ:
+اضبط `MYSQLHOST` و`MYSQLPORT` و`MYSQLUSER` و`MYSQLPASSWORD` و`MYSQL_DATABASE` في `.env.local` (أو اضبط `MYSQL_URL`)، ثم اضبط `ADMIN_EMAIL` و`ADMIN_PASSWORD` و`ADMIN_NAME` في بيئة الطرفية ونفّذ:
 ```cmd
 npm run db:admin
 ```
