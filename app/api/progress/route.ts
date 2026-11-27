@@ -25,8 +25,9 @@ export async function GET() {
   try {
     const [[focusRows], [quizRows], [dayRows]] = await Promise.all([
       db.execute<SummaryRow[]>(
-        "SELECT COALESCE(SUM(completed_minutes), 0) AS total_minutes, COUNT(*) AS completed_sessions " +
-        "FROM focus_sessions WHERE user_id = ? AND status = 'completed'",
+        "SELECT COALESCE(SUM(CASE WHEN ended_at IS NOT NULL THEN completed_minutes ELSE 0 END), 0) AS total_minutes, " +
+        "SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_sessions " +
+        "FROM focus_sessions WHERE user_id = ?",
         [user.id]
       ),
       db.execute<QuizSummaryRow[]>(
@@ -36,7 +37,7 @@ export async function GET() {
       ),
       db.execute<DayRow[]>(
         "SELECT DATE_FORMAT(started_at, '%Y-%m-%d') AS study_day, SUM(completed_minutes) AS minutes " +
-        "FROM focus_sessions WHERE user_id = ? AND status = 'completed' " +
+        "FROM focus_sessions WHERE user_id = ? AND ended_at IS NOT NULL " +
         "AND started_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 6 DAY) " +
         "GROUP BY DATE(started_at) ORDER BY DATE(started_at)",
         [user.id]
