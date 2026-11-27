@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import LanguageProvider from "@/components/LanguageProvider";
-import ThemeToggle from "@/components/ThemeToggle";
-import LanguageToggle from "@/components/LanguageToggle";
 
 export const metadata: Metadata = {
   title: "FOCUS AI | Your Personal AI Learning Companion",
@@ -17,8 +15,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeProvider>
           <LanguageProvider>
             {children}
-            <ThemeToggle />
-            <LanguageToggle />
           </LanguageProvider>
         </ThemeProvider>
       </body>
