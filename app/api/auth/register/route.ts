@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const [existing] = await db.execute("SELECT id FROM users WHERE email = ? LIMIT 1", [input.email]);
     if ((existing as unknown[]).length) return NextResponse.json({ error: "An account with this email already exists." }, { status: 409 });
     const passwordHash = await bcrypt.hash(input.password,12);
-    const verificationRequired = process.env.EMAIL_VERIFICATION_REQUIRED !== "false";
+    const verificationRequired = process.env.NODE_ENV === "production" || process.env.EMAIL_VERIFICATION_REQUIRED !== "false";
     const [result] = await db.execute(
       `INSERT INTO users(email,password_hash,full_name,role,preferred_language,education_level,grade,teaching_subject,institution,email_verified)
        VALUES(?,?,?,?,?,?,?,?,?,?)`,
