@@ -56,10 +56,10 @@ export default function RegisterForm() {
       <label className="block text-sm font-semibold">{t("Email")}<input className="field mt-2" name="email" type="email" required autoComplete="email"/></label>
       {role === "student" ? <>
         <label className="block text-sm font-semibold">{t("Education level")}<select className="field mt-2" name="educationLevel"><option value="school">{t("School")}</option><option value="university">{t("University")}</option></select></label>
-        <label className="block text-sm font-semibold">{t("Grade / Academic year")}<input className="field mt-2" name="grade" placeholder="e.g. Grade 11 or Year 1"/></label>
+        <label className="block text-sm font-semibold">{t("Grade / Academic year")}<input className="field mt-2" name="grade" placeholder={t("e.g. Grade 11 or Year 1")}/></label>
         <label className="block text-sm font-semibold">{t("Preferred language")}<select className="field mt-2" name="language"><option value="ar">{t("Arabic")}</option><option value="en">{t("English")}</option></select></label>
       </> : <>
-        <label className="block text-sm font-semibold">{t("Teaching subject / specialization")}<input className="field mt-2" name="teachingSubject" required placeholder="e.g. Mathematics"/></label>
+        <label className="block text-sm font-semibold">{t("Teaching subject / specialization")}<input className="field mt-2" name="teachingSubject" required placeholder={t("e.g. Mathematics")}/></label>
         <label className="block text-sm font-semibold">{t("Education level")}<select className="field mt-2" name="teacherLevel"><option value="school">{t("School")}</option><option value="university">{t("University")}</option><option value="both">{t("Both")}</option></select></label>
         <label className="block text-sm font-semibold">{t("School / Institution (optional)")}<input className="field mt-2" name="institution"/></label>
       </>}
@@ -67,7 +67,7 @@ export default function RegisterForm() {
       <label className="block text-sm font-semibold">{t("Confirm password")}<input className="field mt-2" name="confirmPassword" type="password" minLength={10} required autoComplete="new-password"/></label>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {message && <p role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{message}</p>}
-      <button className="btn btn-primary w-full" disabled={busy}>{busy ? <><LoaderCircle className="animate-spin" size={18}/> Creating...</> : t("Create free account")}</button>
+      <button className="btn btn-primary w-full" disabled={busy}>{busy ? <><LoaderCircle className="animate-spin" size={18}/> {t("Creating...")}</> : t("Create free account")}</button>
     </form>
     <p className="mt-5 text-center text-sm text-slate-600">{t("Already have an account?")} <Link className="font-bold text-brand-600" href="/login">{t("Log in")}</Link></p>
     <p className="mt-4 text-xs leading-5 text-slate-500">{t("Admin accounts are created separately by the platform owner and cannot be selected here.")}</p>
