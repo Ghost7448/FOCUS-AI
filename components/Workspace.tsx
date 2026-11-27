@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import Brand from "@/components/Brand";
 import TutorChat from "@/components/TutorChat";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type Role = "student" | "teacher" | "admin";
@@ -55,7 +57,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
   }
 
   return <main className="workspace-shell min-h-screen md:flex" dir={language === "ar" ? "rtl" : "ltr"}>
-    <aside className="workspace-sidebar w-full p-5 md:min-h-screen md:w-72">
+    <aside className="workspace-sidebar flex w-full flex-col p-5 md:min-h-screen md:w-72">
       <Brand />
       <p className="mt-8 px-3 text-xs font-bold uppercase tracking-wider muted">{t("Workspace")}</p>
       <nav aria-label={t("Workspace")} className="mt-3 space-y-1">
@@ -69,9 +71,15 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
           </button>;
         })}
       </nav>
-      <button type="button" disabled={signingOut} onClick={signOut} className="workspace-signout mt-8">
-        <LogOut size={17}/>{signingOut ? t("Signing out...") : t("Sign out")}
-      </button>
+      <div className="workspace-sidebar-bottom mt-8 md:mt-auto">
+        <button type="button" disabled={signingOut} onClick={signOut} className="workspace-signout">
+          <LogOut size={17}/>{signingOut ? t("Signing out...") : t("Sign out")}
+        </button>
+        <div className="workspace-preferences">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
+      </div>
     </aside>
 
     <section className="min-w-0 flex-1 p-5 md:p-10">
