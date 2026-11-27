@@ -14,7 +14,7 @@ type StoredFile = RowDataPacket & {
 };
 
 function validId(value: string) {
-  return /^\\d{1,18}$/.test(value) && Number(value) > 0;
+  return /^\d{1,18}$/.test(value) && Number(value) > 0;
 }
 
 export async function GET(
