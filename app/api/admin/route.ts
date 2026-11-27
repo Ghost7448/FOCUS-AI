@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
 import { hasSameOrigin } from "@/lib/security";
-import { getPlatformSettings, type PlatformSettingKey } from "@/lib/platform-settings";
+import { ensurePlatformSettingsTable, getPlatformSettings } from "@/lib/platform-settings";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -20,13 +20,8 @@ export async function GET(){
   if(!admin || admin.role!=="admin") return NextResponse.json({error:"Admin access required."},{status:403});
   try{
     const [users]=await db.execute<RowDataPacket[]>(
-      "SELECT id,email,full_name,role,status,email_verified,created_at,last_login FROM users ORDER BY created_at DESC LIMIT 500"
-    ).catch(async()=>{
-      const [fallback]=await db.execute<RowDataPacket[]>(
-        "SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 500"
-      );
-      return [fallback] as [RowDataPacket[]];
-    });
+      "SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 500"
+    );
     const [counts]=await db.execute<RowDataPacket[]>(
       "SELECT COUNT(*) AS total_users,SUM(role='student') AS students,SUM(role='teacher') AS teachers,SUM(role='admin') AS admins,SUM(status='suspended') AS suspended FROM users"
     );
@@ -48,6 +43,7 @@ export async function POST(request:NextRequest){
   if(!parsed.success) return NextResponse.json({error:parsed.error.issues[0]?.message||"Invalid admin action."},{status:400});
   try{
     if(parsed.data.action==="update_settings"){
+      await ensurePlatformSettingsTable();
       const settings=parsed.data.settings;
       const connection=await db.getConnection();
       try{
