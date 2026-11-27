@@ -1,32 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return response;
-
-  const supabase = createServerClient(url, key, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      }
-    }
-  });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  const protectedPath = ["/student", "/teacher", "/admin"].some(p => request.nextUrl.pathname.startsWith(p));
-  if (protectedPath && !user) {
+export function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const protectedPath = ["/student", "/teacher", "/admin"].some(prefix => path.startsWith(prefix));
+  if (protectedPath && !request.cookies.has("focus_session")) {
     const login = request.nextUrl.clone();
     login.pathname = "/login";
-    login.searchParams.set("next", request.nextUrl.pathname);
+    login.searchParams.set("next", path);
     return NextResponse.redirect(login);
   }
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
