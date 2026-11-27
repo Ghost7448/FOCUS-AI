@@ -5,16 +5,17 @@
 ## المتطلبات
 - Node.js 20 أو أحدث.
 - MySQL 8.0 أو أحدث.
-- إعداد SMTP لإرسال رسائل التحقق واستعادة كلمة المرور عند تفعيل التحقق بالبريد.
+- حساب Resend ومفتاح API، مع عنوان مرسل من دومين تم التحقق منه لإرسال رسائل التحقق واستعادة كلمة المرور في الإنتاج.
 
 ## الإعداد لأول مرة
 1. أنشئ قاعدة بيانات MySQL فارغة باسم `focus_ai`.
 2. شغّل الملف `database/schema.sql` على قاعدة البيانات.
 3. انسخ `.env.example` إلى `.env.local`.
 4. ضع بيانات اتصال MySQL في `DATABASE_URL` أو متغيرات `DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME`.
-5. اضبط `APP_URL` على رابط الموقع، وأدخل إعدادات SMTP.
-6. نفّذ `npm install` ثم `npm run dev`.
-7. افتح `http://localhost:3000`.
+5. أنشئ API Key من لوحة Resend، ثم اضبط `RESEND_API_KEY` بالمفتاح و`RESEND_FROM` بعنوان مرسل تابع لدومين تم التحقق منه في Resend، مثل `FOCUS AI <no-reply@example.com>`.
+6. اضبط `APP_URL` على رابط الموقع.
+7. نفّذ `npm install` ثم `npm run dev`.
+8. افتح `http://localhost:3000`.
 
 ## المصادقة والأمان
 - كلمات المرور تُخزّن باستخدام bcrypt مع cost factor 12.
