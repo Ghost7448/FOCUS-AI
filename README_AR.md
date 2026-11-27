@@ -5,7 +5,7 @@
 ## المتطلبات
 - Node.js 20 أو أحدث.
 - MySQL 8.0 أو أحدث.
-- حساب Resend ومفتاح API، مع عنوان مرسل من دومين تم التحقق منه لإرسال رسائل التحقق واستعادة كلمة المرور في الإنتاج.
+- حساب Sendliberty وربط حساب Gmail وإنشاء API Key لإرسال رسائل التحقق واستعادة كلمة المرور، دون الحاجة إلى شراء دومين.
 
 ## الإعداد لأول مرة
 1. أنشئ قاعدة بيانات MySQL فارغة باسم `focus_ai`.
@@ -21,10 +21,13 @@
    - `DB_SSL`: استخدم `true` إذا كان مزود قاعدة البيانات يتطلب SSL، وإلا `false`.
    - `DB_CONNECTION_LIMIT`: الحد الأقصى لاتصالات قاعدة البيانات، والافتراضي `10`.
    عند توفير المتغيرات المنفصلة، تكون لها الأولوية على القيم الموجودة داخل `MYSQL_URL`. ويمكن استخدام `MYSQL_URL` وحده بدلًا منها.
-5. أنشئ API Key من لوحة Resend، ثم اضبط `RESEND_API_KEY` بالمفتاح و`RESEND_FROM` بعنوان مرسل تابع لدومين تم التحقق منه في Resend، مثل `FOCUS AI <no-reply@example.com>`.
-6. اضبط `APP_URL` على رابط الموقع.
-7. نفّذ `npm install` ثم `npm run dev`.
-8. افتح `http://localhost:3000`.
+5. افتح لوحة Sendliberty، واربط حساب Gmail من تبويب Gmail Accounts باستخدام Google OAuth، ثم أنشئ API Key من قسم API Keys.
+6. اضبط متغيرات البريد:
+   - `SL_API_KEY`: مفتاح API الذي أنشأته في Sendliberty.
+   - `SL_FROM`: عنوان Gmail الذي ربطته، ويمكن إضافة اسم مرسل، مثل `FOCUS AI <yourname@gmail.com>`.
+7. اضبط `APP_URL` على رابط الموقع، مثل `https://your-app.up.railway.app`.
+8. نفّذ `npm install` ثم `npm run dev`.
+9. افتح `http://localhost:3000`.
 
 ## المصادقة والأمان
 - كلمات المرور تُخزّن باستخدام bcrypt مع cost factor 12.
