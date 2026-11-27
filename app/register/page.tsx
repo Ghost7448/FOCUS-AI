@@ -1,0 +1,2 @@
+import RegisterForm from "@/components/RegisterForm";
+export default function RegisterPage() { return <main className="container flex min-h-screen items-center justify-center py-10"><RegisterForm/></main>; }
