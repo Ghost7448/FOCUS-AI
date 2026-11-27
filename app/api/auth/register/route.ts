@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
           `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h2>Welcome to FOCUS AI</h2><p>Confirm your email address to activate your account.</p><p><a href="${url}">Verify email address</a></p><p>This link expires in 24 hours. If you did not create this account, ignore this email.</p></div>`);
       } catch (mailError) {
         console.error("Verification email could not be sent:",mailError);
-        return NextResponse.json({ error: "Your account was created, but the verification email could not be sent. Configure SMTP and contact the administrator to resend verification." }, { status: 503 });
+        return NextResponse.json({ error: "Your account was created, but the verification email could not be sent. Check the Resend API configuration and request a new verification email from the login page." }, { status: 503 });
       }
       return NextResponse.json({ message: "Account created. Check your email to verify your address before logging in." }, { status: 201 });
     }
