@@ -22,6 +22,8 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
   const [uploading, setUploading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [questions, setQuestions] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<number, string>>({});
 
   const loadFiles = useCallback(async () => {
     setLoading(true);
@@ -71,6 +73,27 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
       setFiles((current) => current.map((file) => file.id === id ? { ...file, analysis: data.analysis } : file));
     } catch (err) {
       setError(err instanceof Error ? err.message : t("Analysis failed. Please try again."));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function askFile(id: number) {
+    const question = (questions[id] || "").trim();
+    if (!question) return;
+    setBusyId(id);
+    setError("");
+    try {
+      const response = await fetch("/api/study-files/" + id + "/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t("Could not answer this question."));
+      setAnswers((current) => ({ ...current, [id]: data.answer }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("Could not answer this question."));
     } finally {
       setBusyId(null);
     }
@@ -143,6 +166,13 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
             </button>
           </div>
           {file.analysis && <div className="mt-4 whitespace-pre-wrap rounded-xl bg-amber-900/5 p-4 text-sm leading-7 text-brand-900">{file.analysis}</div>}
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <input value={questions[file.id] || ""} onChange={(event) => setQuestions((current) => ({ ...current, [file.id]: event.target.value }))} maxLength={2000} placeholder={t("Ask a question about this file...")} className="min-w-0 flex-1 rounded-xl border border-black/10 bg-transparent px-3 py-2 text-sm"/>
+            <button type="button" disabled={busyId === file.id || !(questions[file.id] || "").trim()} onClick={() => void askFile(file.id)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-800/25 px-4 py-2 text-sm font-bold text-amber-900 disabled:opacity-50">
+              {busyId === file.id ? <Loader2 size={15} className="animate-spin"/> : <Sparkles size={15}/>} {t("Ask Gemini")}
+            </button>
+          </div>
+          {answers[file.id] && <div className="mt-3 whitespace-pre-wrap rounded-xl border border-amber-800/15 p-4 text-sm leading-7 text-brand-900">{answers[file.id]}</div>}
         </div>)}
       </div>}
     </div>
