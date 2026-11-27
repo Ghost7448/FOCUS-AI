@@ -79,19 +79,21 @@ export async function POST(request: NextRequest) {
         [user.id,input.subjectId || null,input.name,input.description || null,hash]);
       return NextResponse.json({ message: "Class created.", classId: result.insertId, joinCode });
     }
-    if (!await ownedClass(input.classId ?? 0, user.id) && user.role !== "admin") return NextResponse.json({ error: "Class not found." }, { status: 404 });
+    if (input.action === "publish_lesson") {
+      const [result] = await db.execute<ResultSetHeader>(
+        user.role === "admin"
+          ? "UPDATE lessons SET status='published',published_at=UTC_TIMESTAMP() WHERE id=?"
+          : "UPDATE lessons SET status='published',published_at=UTC_TIMESTAMP() WHERE id=? AND teacher_id=?",
+        user.role === "admin" ? [input.lessonId] : [input.lessonId,user.id]);
+      if (!result.affectedRows) return NextResponse.json({ error: "Lesson not found." }, { status: 404 });
+      return NextResponse.json({ message: "Lesson published." });
+    }
+    if (!await ownedClass(input.classId, user.id) && user.role !== "admin") return NextResponse.json({ error: "Class not found." }, { status: 404 });
     if (input.action === "create_lesson") {
       const [result] = await db.execute<ResultSetHeader>(
         "INSERT INTO lessons(class_id,teacher_id,title,content,status,published_at) VALUES(?,?,?,?,?,?)",
         [input.classId,user.id,input.title,input.content,input.publish ? "published" : "draft",input.publish ? new Date() : null]);
       return NextResponse.json({ message: "Lesson saved.", lessonId: result.insertId });
-    }
-    if (input.action === "publish_lesson") {
-      const [result] = await db.execute<ResultSetHeader>(
-        "UPDATE lessons SET status='published',published_at=UTC_TIMESTAMP() WHERE id=? AND teacher_id=?",
-        [input.lessonId,user.id]);
-      if (!result.affectedRows) return NextResponse.json({ error: "Lesson not found." }, { status: 404 });
-      return NextResponse.json({ message: "Lesson published." });
     }
     if (input.action === "plan_lesson") {
       const prompt = input.language === "ar"
