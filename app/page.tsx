@@ -37,20 +37,20 @@ export default function Home() {
           <Link className="btn btn-primary" href="/register">{t("Create free account")} <ArrowRight size={17}/></Link>
           <a className="btn btn-secondary" href="#features">{t("Explore features")}</a>
         </div>
-        <p className="mt-4 text-sm text-slate-500">Free to get started • Student and Teacher workspaces</p>
+        <p className="mt-4 text-sm text-slate-500">{t("Free to get started • Student and Teacher workspaces")}</p>
       </div>
       <div className="card relative overflow-hidden p-6 md:p-8">
         <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-blue-100"/>
         <div className="relative">
-          <div className="mb-6 flex items-center justify-between"><Brand/><span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">Learning space</span></div>
+          <div className="mb-6 flex items-center justify-between"><Brand/><span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">{t("Learning space")}</span></div>
           <div className="rounded-2xl bg-brand-700 p-6 text-white">
-            <p className="text-sm text-blue-100">Your learning journey</p>
-            <h2 className="mt-2 text-2xl font-bold">Everything in one place.</h2>
+            <p className="text-sm text-blue-100">{t("Your learning journey")}</p>
+            <h2 className="mt-2 text-2xl font-bold">{t("Everything in one place.")}</h2>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              {["AI Tutor","My Lessons","Study Focus","Progress"].map((x,i)=><div key={x} className="rounded-xl bg-white/10 p-4 text-sm font-semibold">{x}</div>)}
+              {["AI Tutor","My Lessons","Study Focus","Progress"].map((x,i)=><div key={x} className="rounded-xl bg-white/10 p-4 text-sm font-semibold">{t(x)}</div>)}
             </div>
           </div>
-          <p className="mt-5 text-sm leading-6 text-slate-500">A single workspace designed to support both learners and teachers.</p>
+          <p className="mt-5 text-sm leading-6 text-slate-500">{t("A single workspace designed to support both learners and teachers.")}</p>
         </div>
       </div>
     </section>
@@ -73,6 +73,6 @@ export default function Home() {
         </div>
       </div>
     </section>
-    <footer className="border-t border-blue-100 bg-white py-8 text-center text-sm text-slate-500">© {new Date().getFullYear()} FOCUS AI. One Platform. A Smarter Way to Learn.</footer>
+    <footer className="border-t border-blue-100 bg-white py-8 text-center text-sm text-slate-500">© {new Date().getFullYear()} FOCUS AI. {t("One Platform. A Smarter Way to Learn.")}</footer>
   </main>;
 }
