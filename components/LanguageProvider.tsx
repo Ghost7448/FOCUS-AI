@@ -139,7 +139,24 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Delete": { en: "Delete", ar: "حذف" },
   "Analysis failed. Please try again.": { en: "Analysis failed. Please try again.", ar: "التحليل فشل. حاول تاني." },
   "Analyze again": { en: "Analyze again", ar: "حلّل مرة تانية" },
-  "Analyze with Gemini": { en: "Analyze with Gemini", ar: "حلّل باستخدام Gemini" }
+  "Analyze with Gemini": { en: "Analyze with Gemini", ar: "حلّل باستخدام Gemini" },
+  "Focus timer": { en: "Focus timer", ar: "مؤقت التركيز" },
+  "Choose a session length and start studying.": { en: "Choose a session length and start studying.", ar: "اختار مدة الجلسة وابدأ المذاكرة." },
+  "Stay focused until the timer ends.": { en: "Stay focused until the timer ends.", ar: "استمر في التركيز لحد ما الوقت يخلص." },
+  "Start focus": { en: "Start focus", ar: "ابدأ التركيز" },
+  "End session": { en: "End session", ar: "إنهاء الجلسة" },
+  "min": { en: "min", ar: "دقيقة" },
+  "Could not load your focus session.": { en: "Could not load your focus session.", ar: "مقدرناش نحمل جلسة التركيز." },
+  "Could not start your focus session.": { en: "Could not start your focus session.", ar: "مقدرناش نبدأ جلسة التركيز." },
+  "Could not save your focus session.": { en: "Could not save your focus session.", ar: "مقدرناش نحفظ جلسة التركيز." },
+  "Loading progress...": { en: "Loading progress...", ar: "جاري تحميل تقدمك..." },
+  "Could not load your progress.": { en: "Could not load your progress.", ar: "مقدرناش نحمل تقدمك." },
+  "Focus minutes": { en: "Focus minutes", ar: "دقايق التركيز" },
+  "Completed sessions": { en: "Completed sessions", ar: "الجلسات المكتملة" },
+  "Quiz attempts": { en: "Quiz attempts", ar: "محاولات الاختبارات" },
+  "Average quiz score": { en: "Average quiz score", ar: "متوسط درجات الاختبارات" },
+  "Last seven days": { en: "Last seven days", ar: "آخر 7 أيام" },
+  "Complete a focus session to see your activity here.": { en: "Complete a focus session to see your activity here.", ar: "كمّل جلسة تركيز علشان نشاطك يظهر هنا." }
 };
 
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
