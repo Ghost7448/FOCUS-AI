@@ -12,6 +12,7 @@ import TutorChat from "@/components/TutorChat";
 import StudyFiles from "@/components/StudyFiles";
 import { FocusTimer, ProgressDashboard } from "@/components/StudyTools";
 import QuizWorkspace from "@/components/QuizWorkspace";
+import TeacherTools from "@/components/TeacherTools";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -28,13 +29,14 @@ const studentItems: Item[] = [
   {icon:ChartNoAxesCombined,label:"My Progress",description:"Review study activity and learning progress over time.",status:"available"}
 ];
 const teacherItems: Item[] = [
-  {icon:Users,label:"My Classes",description:"Create classes, manage student membership, and share a join code.",status:"planned"},
-  {icon:BookOpen,label:"My Courses",description:"Organize teaching materials and lessons.",status:"planned"},
-  {icon:FilePlus2,label:"AI Lesson Planner",description:"Draft lesson plans with learning goals and activities.",status:"planned"},
-  {icon:ClipboardList,label:"AI Exam Creator",description:"Prepare, review, and publish assessments.",status:"planned"},
-  {icon:ChartNoAxesCombined,label:"Results & Reports",description:"Review submissions and class-level results.",status:"planned"}
+  {icon:Users,label:"My Classes",description:"Create classes, manage student membership, and share a join code.",status:"available"},
+  {icon:BookOpen,label:"My Courses",description:"Organize teaching materials and lessons.",status:"available"},
+  {icon:FilePlus2,label:"AI Lesson Planner",description:"Draft lesson plans with learning goals and activities.",status:"available"},
+  {icon:ClipboardList,label:"AI Exam Creator",description:"Prepare, review, and publish assessments.",status:"available"},
+  {icon:ChartNoAxesCombined,label:"Results & Reports",description:"Review submissions and class-level results.",status:"available"}
 ];
 const adminItems: Item[] = [
+  ...teacherItems,
   {icon:Users,label:"User Management",description:"Review user accounts and account status.",status:"planned"},
   {icon:Settings,label:"Platform Settings",description:"Manage platform configuration and usage limits.",status:"planned"}
 ];
@@ -116,7 +118,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
             <div><p className="text-sm muted">{t(title)}</p><h2 className="text-2xl font-extrabold text-brand-900">{t(active.label)}</h2></div>
           </div>
           <p className="mt-5 max-w-2xl leading-7 muted">{t(active.description)}</p>
-          {active.label === "AI Personal Tutor" ? <TutorChat/> : active.label === "Lecture Assistant" ? <StudyFiles tool="lecture"/> : active.label === "Book Assistant" ? <StudyFiles tool="book"/> : active.label === "Smart Focus" ? <FocusTimer/> : active.label === "My Progress" ? <ProgressDashboard/> : active.label === "Smart Quizzes" ? <QuizWorkspace/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
+          {active.label === "AI Personal Tutor" ? <TutorChat/> : active.label === "Lecture Assistant" ? <StudyFiles tool="lecture"/> : active.label === "Book Assistant" ? <StudyFiles tool="book"/> : active.label === "Smart Focus" ? <FocusTimer/> : active.label === "My Progress" ? <ProgressDashboard/> : active.label === "Smart Quizzes" ? <QuizWorkspace/> : ["My Classes","My Courses","AI Lesson Planner","AI Exam Creator","Results & Reports"].includes(active.label) ? <TeacherTools tool={active.label}/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
             <div className="flex items-center gap-2 font-bold text-brand-900"><LockKeyhole size={17}/> {t("This tool is not active yet")}</div>
             <p className="mt-2 text-sm leading-6 muted">{t("This feature is still being implemented. It will become available when its backend and user actions are ready.")}</p>
           </div>}
