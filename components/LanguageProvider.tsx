@@ -159,11 +159,6 @@ const translations: Record<string, { en: string; ar: string }> = {
   "No classes assigned": { en: "No classes assigned", ar: "مفيش فصول مضافة" },
   "Draft": { en: "Draft", ar: "مسودة" },
   "Publish": { en: "Publish", ar: "نشر" },
-  "Create classes, manage student membership, and share a join code.": { en: "Create classes, manage student membership, and share a join code.", ar: "أنشئ الفصول وأدر انضمام الطلاب وشارك كود الفصل." },
-  "Organize teaching materials and lessons.": { en: "Organize teaching materials and lessons.", ar: "نظّم المواد التعليمية والدروس." },
-  "Draft lesson plans with learning goals and activities.": { en: "Draft lesson plans with learning goals and activities.", ar: "أنشئ خطط دروس بأهداف وأنشطة تعليمية." },
-  "Prepare, review, and publish assessments.": { en: "Prepare, review, and publish assessments.", ar: "جهّز الاختبارات وراجعها وانشرها." },
-  "Review submissions and class-level results.": { en: "Review submissions and class-level results.", ar: "راجع تسليمات الطلاب ونتائج الفصول." },
   "Join your teacher’s class using a class code.": { en: "Join your teacher’s class using a class code.", ar: "انضم لفصل المدرس باستخدام كود الفصل." },
   "Take exams assigned to your classes and review your scores.": { en: "Take exams assigned to your classes and review your scores.", ar: "حل الاختبارات المضافة لفصولك وراجع درجاتك." },
   "Join a Class": { en: "Join a Class", ar: "الانضمام لفصل" },
@@ -179,14 +174,9 @@ const translations: Record<string, { en: string; ar: string }> = {
   "No exams available yet.": { en: "No exams available yet.", ar: "مفيش اختبارات متاحة حاليًا." },
   "Join a class using the code from your teacher to see its exams.": { en: "Join a class using the code from your teacher to see its exams.", ar: "انضم لفصل باستخدام الكود اللي المدرس ادهولك علشان تشوف اختباراته." },
   "Your teacher’s class using a class code.": { en: "Join your teacher’s class using a class code.", ar: "انضم لفصل المدرس باستخدام كود الفصل." },
-  "Take exams assigned to your classes and review your scores.": { en: "Take exams assigned to your classes and review your scores.", ar: "حل الاختبارات المضافة لفصولك وراجع درجاتك." },
 
   "published": { en: "Published", ar: "منشور" },
   "draft": { en: "Draft", ar: "مسودة" },
-  "User Management": { en: "User Management", ar: "إدارة المستخدمين" },
-  "Platform Settings": { en: "Platform Settings", ar: "إعدادات المنصة" },
-  "Review user accounts and account status.": { en: "Review user accounts and account status.", ar: "راجع حسابات المستخدمين وحالة كل حساب." },
-  "Manage platform configuration and usage limits.": { en: "Manage platform configuration and usage limits.", ar: "إدارة إعدادات المنصة وحدود الاستخدام." },
   "Total users": { en: "Total users", ar: "إجمالي المستخدمين" },
   "Students": { en: "Students", ar: "الطلاب" },
   "Teachers": { en: "Teachers", ar: "المدرسون" },
@@ -282,7 +272,6 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Submitting...": { en: "Submitting...", ar: "جاري إرسال الإجابات..." },
   "Could not submit this quiz.": { en: "Could not submit this quiz.", ar: "مقدرناش نبعت إجابات الاختبار." },
   "Your saved quizzes": { en: "Your saved quizzes", ar: "اختباراتك المحفوظة" },
-  "questions": { en: "questions", ar: "أسئلة" },
   "Open": { en: "Open", ar: "فتح" }
 };
 
