@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const settingKeys = ["allow_student_registration","allow_teacher_registration","require_email_verification","maintenance_mode"] as const;
 const schema = z.discriminatedUnion("action",[
   z.object({action:z.literal("update_user"),userId:z.number().int().positive(),role:z.enum(["student","teacher","admin"]),status:z.enum(["active","suspended"])}),
-  z.object({action:z.literal("update_settings"),settings:z.record(z.enum(settingKeys),z.boolean())})
+  z.object({action:z.literal("update_settings"),settings:z.object({allow_student_registration:z.boolean(),allow_teacher_registration:z.boolean(),require_email_verification:z.boolean(),maintenance_mode:z.boolean()})})
 ]);
 
 export async function GET(){
