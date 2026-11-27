@@ -52,26 +52,31 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
   const title = role === "student" ? "Student Workspace" : role === "teacher" ? "Teacher Workspace" : "Admin Workspace";
   const [active, setActive] = useState<Item | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [restored, setRestored] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(`focus-ai:last-workspace:${role}`);
-      if (saved === "dashboard") return;
-      const match = items.find((item) => item.label === saved);
-      if (match) setActive(match);
+      if (saved !== "dashboard") {
+        const match = items.find((item) => item.label === saved);
+        if (match) setActive(match);
+      }
     } catch {
       // Keep the dashboard available if browser storage is disabled.
+    } finally {
+      setRestored(true);
     }
   }, [role, items]);
 
   useEffect(() => {
+    if (!restored) return;
     try {
       window.localStorage.setItem(`focus-ai:last-workspace:${role}`, active?.label ?? "dashboard");
     } catch {
       // Workspace navigation still works without persistent storage.
     }
-  }, [active, role]);
+  }, [active, role, restored]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -93,8 +98,10 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
   }
 
   return <main className="workspace-shell min-h-screen md:flex" dir={language === "ar" ? "rtl" : "ltr"}>
-    <aside className="workspace-sidebar flex w-full flex-col p-5 md:min-h-screen md:w-72">
-      <Brand />
+    {menuOpen && <button type="button" aria-label={t("Close menu")} className="workspace-mobile-backdrop md:hidden" onClick={() => setMenuOpen(false)} />}
+    <aside id="workspace-sidebar" className={`workspace-sidebar flex w-full flex-col p-5 md:min-h-screen md:w-72 ${menuOpen ? "workspace-sidebar-open" : "workspace-sidebar-closed"}`}>
+      <div className="flex items-center justify-between md:hidden"><Brand /><button type="button" aria-label={t("Close menu")} onClick={() => setMenuOpen(false)} className="workspace-menu-button"><X size={21}/></button></div>
+      <div className="hidden md:block"><Brand /></div>
       <p className="mt-8 px-3 text-xs font-bold uppercase tracking-wider muted">{t("Workspace")}</p>
       <nav aria-label={t("Workspace")} className="mt-3 space-y-1">
         <button type="button" onClick={() => { setActive(null); setMenuOpen(false); }} className={`workspace-nav-item ${!active ? "is-active" : ""}`}>
@@ -118,8 +125,13 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
       </div>
     </aside>
 
-    <section className="min-w-0 flex-1 p-5 md:p-10">
+    <section className="workspace-main min-w-0 flex-1 p-4 sm:p-5 md:p-10">
       <div className="mx-auto max-w-5xl">
+        <div className="workspace-mobile-topbar mb-5 flex items-center justify-between md:hidden">
+          <button type="button" aria-label={t("Open menu")} aria-controls="workspace-sidebar" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)} className="workspace-menu-button"><Menu size={21}/></button>
+          <Brand />
+          <span className="role-pill capitalize">{t(role === "student" ? "Student" : role === "teacher" ? "Teacher" : "Admin")}</span>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div><p className="text-sm muted">{t(title)}</p><h1 className="mt-1 text-3xl font-extrabold text-brand-900">{t("Welcome,")} {name}</h1></div>
           <span className="role-pill capitalize">{t(role === "student" ? "Student" : role === "teacher" ? "Teacher" : "Admin")}</span>
