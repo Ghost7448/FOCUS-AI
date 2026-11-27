@@ -28,7 +28,7 @@ export async function GET(){
     const [classCounts]=await db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_classes FROM classes");
     const [examCounts]=await db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_exams FROM exams");
     const settings=await getPlatformSettings();
-    return NextResponse.json({users,stats:{...counts[0],...classCounts[0],...examCounts[0]},settings});
+    return NextResponse.json({users,stats:{...counts[0],...classCounts[0],...examCounts[0]},settings,currentAdminId:admin.id});
   }catch(error){
     console.error("Admin dashboard load failed:",error);
     return NextResponse.json({error:"Could not load admin dashboard."},{status:500});
