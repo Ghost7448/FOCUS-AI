@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     if (isPdf && originalBytes.subarray(0, 5).toString("ascii") !== "%PDF-") {
       return NextResponse.json({ error: "The selected file is not a valid PDF." }, { status: 415 });
     }
-    const mimeType = isPdf ? "application/pdf" : file.type;
+    const storedMimeType = isPdf ? "application/pdf" : mimeType;
     const [countRows] = await db.execute<RowDataPacket[]>(
       "SELECT COUNT(*) AS total FROM study_files WHERE user_id = ? AND tool_type = ?",
       [user.id, tool]
@@ -104,10 +104,10 @@ export async function POST(request: NextRequest) {
     const [result] = await db.execute<ResultSetHeader>(
       "INSERT INTO study_files (user_id, tool_type, original_name, mime_type, file_size, file_data, compression_method) " +
       "VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [user.id, tool, name, mimeType, originalBytes.length, bytes, compression]
+      [user.id, tool, name, storedMimeType, originalBytes.length, bytes, compression]
     );
     return NextResponse.json({
-      file: { id: result.insertId, tool_type: tool, original_name: name, mime_type: mimeType, file_size: originalBytes.length, compressed: compression === "gzip" }
+      file: { id: result.insertId, tool_type: tool, original_name: name, mime_type: storedMimeType, file_size: originalBytes.length, compressed: compression === "gzip" }
     }, { status: 201 });
   } catch (error) {
     console.error("Study file upload failed:", error);
