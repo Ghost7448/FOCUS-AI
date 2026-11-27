@@ -1,0 +1,262 @@
+-- FOCUS AI MySQL 8.0+ schema
+-- Create an empty database first, then run this file.
+SET NAMES utf8mb4;
+SET time_zone = '+00:00';
+
+CREATE TABLE IF NOT EXISTS users (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ email VARCHAR(190) NOT NULL UNIQUE,
+ password_hash VARCHAR(255) NOT NULL,
+ full_name VARCHAR(120) NOT NULL,
+ role ENUM('student','teacher','admin') NOT NULL DEFAULT 'student',
+ status ENUM('active','suspended','deleted') NOT NULL DEFAULT 'active',
+ email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+ preferred_language ENUM('ar','en') NOT NULL DEFAULT 'en',
+ education_level VARCHAR(80) NULL, grade VARCHAR(80) NULL,
+ teaching_subject VARCHAR(120) NULL, institution VARCHAR(160) NULL, bio TEXT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ INDEX users_role_status_idx(role,status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS sessions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ token_hash CHAR(64) NOT NULL UNIQUE, expires_at DATETIME NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, last_used_at DATETIME NULL,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX sessions_expiry_idx(expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ token_hash CHAR(64) NOT NULL UNIQUE, expires_at DATETIME NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX email_token_expiry_idx(expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ token_hash CHAR(64) NOT NULL UNIQUE, expires_at DATETIME NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX reset_token_expiry_idx(expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS auth_attempts (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, email VARCHAR(190) NOT NULL,
+ ip_address VARCHAR(64) NOT NULL, attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ INDEX auth_attempts_lookup_idx(email,ip_address,attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, actor_user_id BIGINT UNSIGNED NULL,
+ action VARCHAR(100) NOT NULL, entity_type VARCHAR(80) NULL, entity_id BIGINT UNSIGNED NULL,
+ metadata JSON NULL, ip_address VARCHAR(64) NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+ INDEX audit_actor_created_idx(actor_user_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS subjects (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(160) NOT NULL UNIQUE,
+ description TEXT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS classes (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, teacher_id BIGINT UNSIGNED NOT NULL,
+ subject_id BIGINT UNSIGNED NULL, name VARCHAR(160) NOT NULL, description TEXT NULL,
+ join_code_hash CHAR(64) NOT NULL UNIQUE, is_active BOOLEAN DEFAULT TRUE,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+ FOREIGN KEY(subject_id) REFERENCES subjects(id) ON DELETE SET NULL,
+ INDEX classes_teacher_idx(teacher_id,is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS class_members (
+ class_id BIGINT UNSIGNED NOT NULL, student_id BIGINT UNSIGNED NOT NULL,
+ joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(class_id,student_id),
+ FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+ FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX class_members_student_idx(student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS lessons (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, class_id BIGINT UNSIGNED NOT NULL,
+ teacher_id BIGINT UNSIGNED NOT NULL, title VARCHAR(200) NOT NULL, content LONGTEXT NULL,
+ status ENUM('draft','published','archived') DEFAULT 'draft', published_at DATETIME NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+ FOREIGN KEY(teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX lessons_class_status_idx(class_id,status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS lesson_assignments (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, lesson_id BIGINT UNSIGNED NOT NULL,
+ student_id BIGINT UNSIGNED NOT NULL, assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
+ FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+ UNIQUE KEY lesson_assign_unique(lesson_id,student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS assignments (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, class_id BIGINT UNSIGNED NOT NULL,
+ teacher_id BIGINT UNSIGNED NOT NULL, title VARCHAR(200) NOT NULL, instructions LONGTEXT NULL,
+ due_at DATETIME NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+ FOREIGN KEY(teacher_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX assignments_class_due_idx(class_id,due_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS assignment_submissions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, assignment_id BIGINT UNSIGNED NOT NULL,
+ student_id BIGINT UNSIGNED NOT NULL, content LONGTEXT NULL, file_path VARCHAR(500) NULL,
+ grade DECIMAL(6,2) NULL, feedback TEXT NULL, submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP, graded_at DATETIME NULL,
+ FOREIGN KEY(assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+ FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+ UNIQUE KEY assignment_submission_unique(assignment_id,student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS exams (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, class_id BIGINT UNSIGNED NOT NULL,
+ teacher_id BIGINT UNSIGNED NOT NULL, title VARCHAR(200) NOT NULL, instructions TEXT NULL,
+ starts_at DATETIME NULL, ends_at DATETIME NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE,
+ FOREIGN KEY(teacher_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS exam_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, exam_id BIGINT UNSIGNED NOT NULL,
+ question_text LONGTEXT NOT NULL, question_type ENUM('multiple_choice','true_false','short_answer','essay') NOT NULL,
+ options_json JSON NULL, answer_key TEXT NULL, points DECIMAL(6,2) DEFAULT 1, position INT DEFAULT 0,
+ FOREIGN KEY(exam_id) REFERENCES exams(id) ON DELETE CASCADE, INDEX exam_questions_order_idx(exam_id,position)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS exam_submissions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, exam_id BIGINT UNSIGNED NOT NULL,
+ student_id BIGINT UNSIGNED NOT NULL, status ENUM('in_progress','submitted','graded') DEFAULT 'in_progress',
+ score DECIMAL(7,2) NULL, started_at DATETIME DEFAULT CURRENT_TIMESTAMP, submitted_at DATETIME NULL,
+ FOREIGN KEY(exam_id) REFERENCES exams(id) ON DELETE CASCADE,
+ FOREIGN KEY(student_id) REFERENCES users(id) ON DELETE CASCADE,
+ UNIQUE KEY exam_submission_unique(exam_id,student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS exam_answers (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, submission_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL, answer_text LONGTEXT NULL, awarded_points DECIMAL(6,2) NULL,
+ teacher_feedback TEXT NULL,
+ FOREIGN KEY(submission_id) REFERENCES exam_submissions(id) ON DELETE CASCADE,
+ FOREIGN KEY(question_id) REFERENCES exam_questions(id) ON DELETE CASCADE,
+ UNIQUE KEY exam_answer_unique(submission_id,question_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS lectures (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ title VARCHAR(200) NOT NULL, source_type ENUM('recording','upload') NOT NULL,
+ file_path VARCHAR(500) NULL, duration_seconds INT UNSIGNED NULL,
+ processing_status ENUM('queued','processing','completed','failed') DEFAULT 'queued',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX lectures_owner_idx(user_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS lecture_transcripts (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, lecture_id BIGINT UNSIGNED NOT NULL,
+ transcript LONGTEXT NOT NULL, language VARCHAR(12) NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(lecture_id) REFERENCES lectures(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS lecture_summaries (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, lecture_id BIGINT UNSIGNED NOT NULL,
+ summary LONGTEXT NOT NULL, topics_json JSON NULL, timestamps_json JSON NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(lecture_id) REFERENCES lectures(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS books (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ title VARCHAR(240) NOT NULL, file_path VARCHAR(500) NOT NULL,
+ processing_status ENUM('queued','processing','completed','failed') DEFAULT 'queued',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX books_owner_idx(user_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS book_chunks (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, book_id BIGINT UNSIGNED NOT NULL,
+ page_number INT UNSIGNED NULL, chunk_text LONGTEXT NOT NULL, embedding JSON NULL,
+ FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE, INDEX book_chunks_page_idx(book_id,page_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS notes (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ title VARCHAR(200) NOT NULL, content LONGTEXT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX notes_owner_updated_idx(user_id,updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS conversations (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ title VARCHAR(200) DEFAULT 'New conversation', context_type VARCHAR(40) DEFAULT 'tutor',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX conversations_owner_idx(user_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS messages (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, conversation_id BIGINT UNSIGNED NOT NULL,
+ role ENUM('user','assistant','system') NOT NULL, content LONGTEXT NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+ INDEX messages_conversation_idx(conversation_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS focus_sessions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ planned_minutes SMALLINT UNSIGNED NOT NULL, completed_minutes SMALLINT UNSIGNED DEFAULT 0,
+ status ENUM('completed','cancelled','interrupted') DEFAULT 'completed',
+ started_at DATETIME NOT NULL, ended_at DATETIME NULL,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX focus_owner_idx(user_id,started_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS quizzes (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ title VARCHAR(200) NOT NULL, source_type VARCHAR(40) DEFAULT 'generated',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS quiz_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, quiz_id BIGINT UNSIGNED NOT NULL,
+ question_text LONGTEXT NOT NULL, options_json JSON NULL, answer_key TEXT NULL,
+ points DECIMAL(6,2) DEFAULT 1,
+ FOREIGN KEY(quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, quiz_id BIGINT UNSIGNED NOT NULL,
+ user_id BIGINT UNSIGNED NOT NULL, score DECIMAL(7,2) NULL, answers_json JSON NULL,
+ completed_at DATETIME NULL,
+ FOREIGN KEY(quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX quiz_attempt_owner_idx(user_id,completed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS notifications (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+ title VARCHAR(200) NOT NULL, body TEXT NOT NULL, type VARCHAR(50) NOT NULL,
+ target_url VARCHAR(500) NULL, read_at DATETIME NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+ INDEX notifications_unread_idx(user_id,read_at,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS reports (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, requested_by BIGINT UNSIGNED NOT NULL,
+ report_type VARCHAR(80) NOT NULL, filters_json JSON NULL, file_path VARCHAR(500) NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(requested_by) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS usage_logs (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NULL,
+ service VARCHAR(80) NOT NULL, units DECIMAL(12,3) DEFAULT 0, estimated_cost DECIMAL(12,6) NULL,
+ metadata JSON NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
+ INDEX usage_service_created_idx(service,created_at), INDEX usage_owner_created_idx(user_id,created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
