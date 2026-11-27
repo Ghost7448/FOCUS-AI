@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
 import { generateGeminiText } from "@/lib/gemini";
+import { hasSameOrigin } from "@/lib/security";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -61,6 +62,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!hasSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   const user = await getCurrentUser();
   if (!user || !["teacher", "admin"].includes(user.role)) return NextResponse.json({ error: "Teacher access required." }, { status: 403 });
   const parsed = postSchema.safeParse(await request.json().catch(() => null));
