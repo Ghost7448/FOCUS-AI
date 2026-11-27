@@ -29,7 +29,7 @@ export async function GET() {
         es.status AS submission_status,es.score
        FROM class_members cm INNER JOIN exams e ON e.class_id=cm.class_id
        INNER JOIN classes c ON c.id=e.class_id
-       LEFT JOIN exam_submissions es ON es.exam_id=e.id AND es.user_id=cm.student_id
+       LEFT JOIN exam_submissions es ON es.exam_id=e.id AND es.student_id=cm.student_id
        WHERE cm.student_id=? ORDER BY e.created_at DESC`, [user.id]);
     const [questions] = await db.execute<RowDataPacket[]>(
       `SELECT q.id,q.exam_id,q.question_text,q.options_json,q.points
@@ -77,11 +77,11 @@ export async function POST(request: NextRequest) {
     const [totalRows] = await db.execute<RowDataPacket[]>("SELECT COALESCE(SUM(points),0) AS total FROM exam_questions WHERE exam_id=?", [parsed.data.examId]);
     const total = Number(totalRows[0]?.total || 0);
     await db.execute(
-      `INSERT INTO exam_submissions(exam_id,user_id,status,score,submitted_at)
+      `INSERT INTO exam_submissions(exam_id,student_id,status,score,submitted_at)
        VALUES(?,?,'submitted',?,UTC_TIMESTAMP())
        ON DUPLICATE KEY UPDATE status='submitted',score=VALUES(score),submitted_at=UTC_TIMESTAMP()`,
       [parsed.data.examId,user.id,score]);
-    const [submissionRows] = await db.execute<RowDataPacket[]>("SELECT id FROM exam_submissions WHERE exam_id=? AND user_id=? LIMIT 1", [parsed.data.examId,user.id]);
+    const [submissionRows] = await db.execute<RowDataPacket[]>("SELECT id FROM exam_submissions WHERE exam_id=? AND student_id=? LIMIT 1", [parsed.data.examId,user.id]);
     const submissionId = Number(submissionRows[0].id);
     for (const [questionId,answer] of answerMap) {
       const q = questions.find(item => Number(item.id) === questionId);
