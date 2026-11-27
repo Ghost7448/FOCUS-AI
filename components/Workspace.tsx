@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { BookOpen, BrainCircuit, ChartNoAxesCombined, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Mic, Presentation, Settings, Timer, Users, FilePlus2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { destroySession } from "@/lib/auth";
 import Brand from "@/components/Brand";
 
 type Role = "student" | "teacher" | "admin";
@@ -29,9 +29,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
 
   async function signOut() {
     "use server";
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-    const { redirect } = await import("next/navigation");
+    await destroySession();
     redirect("/login");
   }
 
