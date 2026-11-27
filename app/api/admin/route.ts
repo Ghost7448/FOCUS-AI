@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
 import { hasSameOrigin } from "@/lib/security";
 import { ensurePlatformSettingsTable, getPlatformSettings } from "@/lib/platform-settings";
-import type { ResultSetHeader, RowDataPacket } from "mysql2";
+import type { RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
