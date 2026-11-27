@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Brand from "@/components/Brand";
 import TutorChat from "@/components/TutorChat";
+import StudyFiles from "@/components/StudyFiles";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -18,8 +19,8 @@ type Item = { icon: typeof BrainCircuit; label: string; description: string; sta
 
 const studentItems: Item[] = [
   {icon:BrainCircuit,label:"AI Personal Tutor",description:"An AI learning assistant for explanations, examples, and guided practice.",status:"available"},
-  {icon:Mic,label:"Lecture Assistant",description:"Record or upload permitted lectures, transcribe them, and create revision notes.",status:"planned"},
-  {icon:BookOpen,label:"Book Assistant",description:"Upload PDF references and ask questions with page-based citations.",status:"planned"},
+  {icon:Mic,label:"Lecture Assistant",description:"Record or upload permitted lectures, transcribe them, and create revision notes.",status:"available"},
+  {icon:BookOpen,label:"Book Assistant",description:"Upload PDF references and ask questions with page-based citations.",status:"available"},
   {icon:Timer,label:"Smart Focus",description:"A study timer with breaks, session history, and daily goals.",status:"planned"},
   {icon:ClipboardList,label:"Smart Quizzes",description:"Generate practice quizzes and review your answers.",status:"planned"},
   {icon:ChartNoAxesCombined,label:"My Progress",description:"Review study activity and learning progress over time.",status:"planned"}
@@ -113,7 +114,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
             <div><p className="text-sm muted">{t(title)}</p><h2 className="text-2xl font-extrabold text-brand-900">{t(active.label)}</h2></div>
           </div>
           <p className="mt-5 max-w-2xl leading-7 muted">{t(active.description)}</p>
-          {active.label === "AI Personal Tutor" ? <TutorChat/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
+          {active.label === "AI Personal Tutor" ? <TutorChat/> : active.label === "Lecture Assistant" ? <StudyFiles tool="lecture"/> : active.label === "Book Assistant" ? <StudyFiles tool="book"/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
             <div className="flex items-center gap-2 font-bold text-brand-900"><LockKeyhole size={17}/> {t("This tool is not active yet")}</div>
             <p className="mt-2 text-sm leading-6 muted">{t("This feature is still being implemented. It will become available when its backend and user actions are ready.")}</p>
           </div>}
