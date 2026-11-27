@@ -131,7 +131,7 @@ export default function TeacherTools({ tool }: { tool: string }) {
           <button disabled={busy||noClasses} className="btn btn-primary md:col-span-2">{busy?<LoaderCircle className="animate-spin"/>:<Sparkles size={17}/>} {t("Generate with AI")}</button>
         </form>
         {plan&&<article className="card p-5"><input className="field mb-4" value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)}/><pre className="whitespace-pre-wrap font-sans text-sm leading-7">{plan}</pre><button disabled={busy} onClick={savePlan} className="btn btn-primary mt-5">{t("Save as draft lesson")}</button></article>}
-        <div className="space-y-2">{lessons.map(l=><article key={l.id} className="card flex items-center justify-between gap-3 p-4"><div><b>{l.title}</b><p className="text-sm muted">{l.class_name} · {t(l.status)}</p></div></article>)}</div>
+        <div className="space-y-2">{lessons.map(l=><article key={l.id} className="card flex items-center justify-between gap-3 p-4"><div><b>{l.title}</b><p className="text-sm muted">{l.class_name} · {t(l.status)}</p></div>{l.status==="draft"&&<button type="button" disabled={busy} onClick={()=>void send({action:"publish_lesson",lessonId:l.id})} className="btn btn-primary">{t("Publish")}</button>}</article>)}</div>
       </section>}
 
       {tool==="AI Exam Creator" && <section className="space-y-4">
