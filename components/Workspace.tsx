@@ -80,9 +80,11 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
 
   useEffect(() => {
     if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setMenuOpen(false); };
+    window.addEventListener("keydown", onKeyDown);
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
+    return () => { window.removeEventListener("keydown", onKeyDown); document.body.style.overflow = previous; };
   }, [menuOpen]);
 
   async function signOut() {
