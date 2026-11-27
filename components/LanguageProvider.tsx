@@ -136,7 +136,10 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Upload failed. Please try again.": { en: "Upload failed. Please try again.", ar: "الرفع فشل. حاول تاني." },
   "Could not delete this file.": { en: "Could not delete this file.", ar: "مقدرناش نحذف الملف ده." },
   "Download": { en: "Download", ar: "تحميل" },
-  "Delete": { en: "Delete", ar: "حذف" }
+  "Delete": { en: "Delete", ar: "حذف" },
+  "Analysis failed. Please try again.": { en: "Analysis failed. Please try again.", ar: "التحليل فشل. حاول تاني." },
+  "Analyze again": { en: "Analyze again", ar: "حلّل مرة تانية" },
+  "Analyze with Gemini": { en: "Analyze with Gemini", ar: "حلّل باستخدام Gemini" }
 };
 
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
