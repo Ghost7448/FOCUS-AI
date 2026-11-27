@@ -40,6 +40,7 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Review user accounts and account status.": { en: "Review user accounts and account status.", ar: "راجع حسابات المستخدمين وحالتها." },
   "Platform Settings": { en: "Platform Settings", ar: "إعدادات المنصة" },
   "Manage platform configuration and usage limits.": { en: "Manage platform configuration and usage limits.", ar: "إدارة إعدادات المنصة وحدود الاستخدام." },
+  "Manage registration and account security settings.": { en: "Manage registration and account security settings.", ar: "إدارة إعدادات التسجيل وأمان الحسابات." },
   "Ready to use": { en: "Ready to use", ar: "جاهزة للاستخدام" },
   "In development": { en: "In development", ar: "قيد التطوير" },
   "Back to dashboard": { en: "← Back to dashboard", ar: "← العودة للوحة التحكم" },
