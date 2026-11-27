@@ -70,8 +70,8 @@ export async function POST(request:NextRequest){
       if(!targetRows.length){await connection.rollback();return NextResponse.json({error:"User not found."},{status:404});}
       const target=targetRows[0];
       if(target.role==="admin" && (role!=="admin" || status!=="active")){
-        const [adminRows]=await connection.execute<RowDataPacket[]>("SELECT COUNT(*) AS total FROM users WHERE role='admin' AND status='active' FOR UPDATE");
-        if(Number(adminRows[0]?.total||0)<=1){await connection.rollback();return NextResponse.json({error:"The platform must keep at least one active administrator."},{status:409});}
+        const [activeAdmins]=await connection.execute<RowDataPacket[]>("SELECT id FROM users WHERE role='admin' AND status='active' FOR UPDATE");
+        if(activeAdmins.length<=1){await connection.rollback();return NextResponse.json({error:"The platform must keep at least one active administrator."},{status:409});}
       }
       await connection.execute("UPDATE users SET role=?,status=?,updated_at=UTC_TIMESTAMP() WHERE id=?",[role,status,userId]);
       await connection.execute("INSERT INTO audit_logs(actor_user_id,action,entity_type,entity_id,metadata) VALUES(?,?,?,?,?)",
