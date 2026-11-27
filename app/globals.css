@@ -243,7 +243,7 @@ body {
 [dir="rtl"] .workspace-feature-card { text-align:right; }
 [dir="rtl"] .workspace-back { direction:rtl; }
 [dir="rtl"] .workspace-shell { text-align:start; }
-[dir="rtl"] .workspace-feature-card .ml-auto { margin-left:0; margin-right:auto; }
+[dir="rtl"] .workspace-feature-card .ml-auto, [dir="rtl"] .workspace-nav-item .ml-auto { margin-left:0; margin-right:auto; }
 [dir="rtl"] .workspace-feature-card .workspace-status { direction:rtl; }
 [dir="rtl"] .workspace-hero { text-align:right; }
 [dir="rtl"] input, [dir="rtl"] textarea, [dir="rtl"] select { text-align:right; }
