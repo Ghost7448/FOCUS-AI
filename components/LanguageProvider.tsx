@@ -108,7 +108,15 @@ const translations: Record<string, { en: string; ar: string }> = {
   "School": { en: "School", ar: "مدرسة" },
   "University": { en: "University", ar: "جامعة" },
   "Both": { en: "Both", ar: "كلاهما" },
-
+  "Create free account": { en: "Create free account", ar: "إنشاء حساب مجاني" },
+  "Arabic": { en: "Arabic", ar: "العربية" },
+  "English": { en: "English", ar: "الإنجليزية" },
+  "Admin": { en: "Admin", ar: "مسؤول" },
+  "Free to get started • Student and Teacher workspaces": { en: "Free to get started • Student and Teacher workspaces", ar: "ابدأ مجانًا • مساحات عمل للطلاب والمدرسين" },
+  "Learning space": { en: "Learning space", ar: "مساحة التعلم" },
+  "Your learning journey": { en: "Your learning journey", ar: "رحلتك التعليمية" },
+  "Everything in one place.": { en: "Everything in one place.", ar: "كل حاجة في مكان واحد." },
+  "Admin accounts are created separately by the platform owner and cannot be selected here.": { en: "Admin accounts are created separately by the platform owner and cannot be selected here.", ar: "يتم إنشاء حسابات المسؤولين بشكل منفصل بواسطة مالك المنصة ولا يمكن اختيارها هنا." }
 };
 
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
