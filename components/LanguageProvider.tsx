@@ -116,7 +116,19 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Learning space": { en: "Learning space", ar: "مساحة التعلم" },
   "Your learning journey": { en: "Your learning journey", ar: "رحلتك التعليمية" },
   "Everything in one place.": { en: "Everything in one place.", ar: "كل حاجة في مكان واحد." },
-  "Admin accounts are created separately by the platform owner and cannot be selected here.": { en: "Admin accounts are created separately by the platform owner and cannot be selected here.", ar: "يتم إنشاء حسابات المسؤولين بشكل منفصل بواسطة مالك المنصة ولا يمكن اختيارها هنا." }
+  "Admin accounts are created separately by the platform owner and cannot be selected here.": { en: "Admin accounts are created separately by the platform owner and cannot be selected here.", ar: "يتم إنشاء حسابات المسؤولين بشكل منفصل بواسطة مالك المنصة ولا يمكن اختيارها هنا." },
+  "AI Tutor": { en: "AI Tutor", ar: "المعلم الذكي" }, "My Lessons": { en: "My Lessons", ar: "دروسي" }, "Study Focus": { en: "Study Focus", ar: "تركيز المذاكرة" }, "Progress": { en: "Progress", ar: "التقدم" },
+  "Free to get started • Student and Teacher workspaces": { en: "Free to get started • Student and Teacher workspaces", ar: "ابدأ مجانًا • مساحات عمل للطلاب والمدرسين" },
+  "Reset your password": { en: "Reset your password", ar: "إعادة تعيين كلمة المرور" },
+  "Enter your account email. If eligible, a reset link will be sent.": { en: "Enter your account email. If eligible, a reset link will be sent.", ar: "اكتب البريد الإلكتروني لحسابك. لو الحساب مؤهل، هنبعتلك رابط إعادة التعيين." },
+  "Send reset link": { en: "Send reset link", ar: "إرسال رابط إعادة التعيين" },
+  "Back to login": { en: "Back to login", ar: "العودة لتسجيل الدخول" },
+  "Choose a new password": { en: "Choose a new password", ar: "اختار كلمة مرور جديدة" },
+  "New password": { en: "New password", ar: "كلمة المرور الجديدة" },
+  "Update password": { en: "Update password", ar: "تحديث كلمة المرور" },
+  "Switch to light mode": { en: "Switch to light mode", ar: "التبديل للوضع الفاتح" },
+  "Switch to dark mode": { en: "Switch to dark mode", ar: "التبديل للوضع الداكن" },
+  "Light": { en: "Light", ar: "فاتح" }, "Dark": { en: "Dark", ar: "داكن" }
 };
 
 type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
