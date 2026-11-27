@@ -11,7 +11,13 @@
 1. أنشئ قاعدة بيانات MySQL فارغة باسم `focus_ai`.
 2. شغّل الملف `database/schema.sql` على قاعدة البيانات.
 3. انسخ `.env.example` إلى `.env.local`.
-4. ضع بيانات اتصال MySQL في `DATABASE_URL` أو متغيرات `DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME`.
+4. اضبط اتصال MySQL باستخدام المتغيرات المنفصلة التالية:
+   - `DB_HOST`: عنوان خادم MySQL، مثل `localhost`.
+   - `DB_PORT`: المنفذ، غالبًا `3306`.
+   - `DB_USER`: اسم مستخدم MySQL.
+   - `DB_PASSWORD`: كلمة مرور مستخدم MySQL.
+   - `DB_NAME`: اسم قاعدة البيانات، مثل `focus_ai`.
+   - `DB_SSL`: استخدم `true` إذا كان مزود قاعدة البيانات يتطلب SSL، وإلا `false`.
 5. أنشئ API Key من لوحة Resend، ثم اضبط `RESEND_API_KEY` بالمفتاح و`RESEND_FROM` بعنوان مرسل تابع لدومين تم التحقق منه في Resend، مثل `FOCUS AI <no-reply@example.com>`.
 6. اضبط `APP_URL` على رابط الموقع.
 7. نفّذ `npm install` ثم `npm run dev`.
@@ -28,11 +34,11 @@
 - يجب فحص ملكية البيانات والصلاحيات داخل كل API/Server Action قبل إضافة أي ميزة جديدة.
 
 ## إنشاء أول Admin
-اضبط `ADMIN_EMAIL` و`ADMIN_PASSWORD` و`ADMIN_NAME` في بيئة الطرفية ثم نفّذ:
-```bash
+اضبط `DB_HOST` و`DB_PORT` و`DB_USER` و`DB_PASSWORD` و`DB_NAME` في `.env.local`، ثم اضبط `ADMIN_EMAIL` و`ADMIN_PASSWORD` و`ADMIN_NAME` في بيئة الطرفية ونفّذ:
+```cmd
 npm run db:admin
 ```
-يجب أن تكون كلمة المرور 12 حرفًا على الأقل. لا تضع بيانات حقيقية في ملف .env مرفوع للمستودع.
+يجب أن تكون كلمة المرور 12 حرفًا على الأقل. لا تضع بيانات حقيقية في ملف `.env` مرفوع للمستودع.
 
 ## استعادة كلمة المرور
 صفحة `/forgot-password` ترسل رابط استعادة صالحًا لمدة 30 دقيقة. تغيير كلمة المرور يبطل الجلسات القديمة.
