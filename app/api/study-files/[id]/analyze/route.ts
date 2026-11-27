@@ -35,6 +35,10 @@ export async function POST(
     const file = rows[0];
     if (!file) return NextResponse.json({ error: "File not found." }, { status: 404 });
 
+    if (file.file_data.length > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "For Gemini analysis, files must be 10 MB or smaller." }, { status: 413 });
+    }
+
     const isPdf = file.mime_type === "application/pdf";
     const isAudio = file.tool_type === "lecture" && file.mime_type.startsWith("audio/");
     if (!isPdf && !isAudio) {
