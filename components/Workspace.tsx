@@ -8,12 +8,13 @@ import {
   LockKeyhole, Sparkles
 } from "lucide-react";
 import Brand from "@/components/Brand";
+import TutorChat from "@/components/TutorChat";
 
 type Role = "student" | "teacher" | "admin";
 type Item = { icon: typeof BrainCircuit; label: string; description: string; status: "available" | "planned" };
 
 const studentItems: Item[] = [
-  {icon:BrainCircuit,label:"AI Personal Tutor",description:"An AI learning assistant for explanations, examples, and guided practice.",status:"planned"},
+  {icon:BrainCircuit,label:"AI Personal Tutor",description:"An AI learning assistant for explanations, examples, and guided practice.",status:"available"},
   {icon:Mic,label:"Lecture Assistant",description:"Record or upload permitted lectures, transcribe them, and create revision notes.",status:"planned"},
   {icon:BookOpen,label:"Book Assistant",description:"Upload PDF references and ask questions with page-based citations.",status:"planned"},
   {icon:Timer,label:"Smart Focus",description:"A study timer with breaks, session history, and daily goals.",status:"planned"},
@@ -91,7 +92,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
                 <span className="workspace-icon inline-grid h-12 w-12 place-items-center rounded-2xl"><Icon size={23}/></span>
                 <span className="mt-4 flex items-center justify-between gap-2 font-bold text-brand-900"><span>{item.label}</span><ArrowUpRight size={17}/></span>
                 <span className="mt-2 block text-sm leading-6 muted">{item.description}</span>
-                <span className="workspace-status mt-4 inline-flex items-center gap-2"><LockKeyhole size={13}/> In development</span>
+                <span className="workspace-status mt-4 inline-flex items-center gap-2">{item.status === "available" ? <Sparkles size={13}/> : <LockKeyhole size={13}/>} {item.status === "available" ? "Ready to use" : "In development"}</span>
               </button>;
             })}
           </div>
@@ -102,10 +103,10 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
             <div><p className="text-sm muted">{title}</p><h2 className="text-2xl font-extrabold text-brand-900">{active.label}</h2></div>
           </div>
           <p className="mt-5 max-w-2xl leading-7 muted">{active.description}</p>
-          <div className="workspace-coming mt-7 rounded-2xl p-5">
+          {active.label === "AI Personal Tutor" ? <TutorChat/> : <div className="workspace-coming mt-7 rounded-2xl p-5">
             <div className="flex items-center gap-2 font-bold text-brand-900"><LockKeyhole size={17}/> This tool is not active yet</div>
-            <p className="mt-2 text-sm leading-6 muted">The current repository contains the workspace interface, but this feature's backend and user actions have not been implemented. It will not display fake AI results or pretend to save data.</p>
-          </div>
+            <p className="mt-2 text-sm leading-6 muted">This feature is still being implemented. It will become available when its backend and user actions are ready.</p>
+          </div>}
         </div>}
       </div>
     </section>
