@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
 
     const connection = await db.getConnection();
     let quizId = 0;
+    let createdQuestions: { id: number; question_text: string; options: string[]; explanation: string }[] = [];
     try {
       await connection.beginTransaction();
       const [quizResult] = await connection.execute<ResultSetHeader>(
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
         [user.id, title]
       );
       quizId = quizResult.insertId;
-      const createdQuestions: { id: number; question_text: string; options: string[]; explanation: string }[] = [];
+      createdQuestions = [];
       for (const question of questions) {
         const [questionResult] = await connection.execute<ResultSetHeader>(
           "INSERT INTO quiz_questions (quiz_id, question_text, options_json, answer_key, points) VALUES (?, ?, ?, ?, 1)",
