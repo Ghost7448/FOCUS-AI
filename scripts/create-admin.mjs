@@ -1,14 +1,41 @@
 import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
 
+function getMysqlConfig() {
+  let fromUrl = null;
+  if (process.env.MYSQL_URL) {
+    let url;
+    try {
+      url = new URL(process.env.MYSQL_URL);
+    } catch {
+      throw new Error("MYSQL_URL must be a valid MySQL connection URL.");
+    }
+    fromUrl = {
+      host: url.hostname,
+      port: Number(url.port || 3306),
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      database: decodeURIComponent(url.pathname.replace(/^\//, "")),
+    };
+  }
+
+  const config = {
+    host: process.env.MYSQLHOST || fromUrl?.host,
+    port: Number(process.env.MYSQLPORT || fromUrl?.port || 3306),
+    user: process.env.MYSQLUSER || fromUrl?.user,
+    password: process.env.MYSQLPASSWORD ?? fromUrl?.password ?? "",
+    database: process.env.MYSQL_DATABASE || fromUrl?.database,
+    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : undefined,
+  };
+
+  if (!config.host || !config.user || !config.database) {
+    throw new Error("Set MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD and MYSQL_DATABASE, or provide MYSQL_URL.");
+  }
+  return config;
+}
+
 async function main() {
   const {
-    DB_HOST,
-    DB_PORT,
-    DB_USER,
-    DB_PASSWORD,
-    DB_NAME,
-    DB_SSL,
     ADMIN_EMAIL,
     ADMIN_PASSWORD,
     ADMIN_NAME,
@@ -20,18 +47,8 @@ async function main() {
   if (ADMIN_PASSWORD.length < 12) {
     throw new Error("ADMIN_PASSWORD must be at least 12 characters.");
   }
-  if (!DB_HOST || !DB_USER || !DB_NAME) {
-    throw new Error("Set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD and DB_NAME.");
-  }
 
-  const connection = await mysql.createConnection({
-    host: DB_HOST,
-    port: Number(DB_PORT || 3306),
-    user: DB_USER,
-    password: DB_PASSWORD || "",
-    database: DB_NAME,
-    ssl: DB_SSL === "true" ? { rejectUnauthorized: true } : undefined,
-  });
+  const connection = await mysql.createConnection(getMysqlConfig());
 
   try {
     const email = ADMIN_EMAIL.trim().toLowerCase();
