@@ -129,11 +129,13 @@ export async function POST(request: NextRequest) {
         [user.id, title]
       );
       quizId = quizResult.insertId;
+      const createdQuestions: { id: number; question_text: string; options: string[]; explanation: string }[] = [];
       for (const question of questions) {
-        await connection.execute(
+        const [questionResult] = await connection.execute<ResultSetHeader>(
           "INSERT INTO quiz_questions (quiz_id, question_text, options_json, answer_key, points) VALUES (?, ?, ?, ?, 1)",
           [quizId, question.question, JSON.stringify({ options: question.options, explanation: question.explanation }), String(question.answerIndex)]
         );
+        createdQuestions.push({ id: questionResult.insertId, question_text: question.question, options: question.options, explanation: question.explanation });
       }
       await connection.commit();
     } catch (error) {
@@ -147,12 +149,7 @@ export async function POST(request: NextRequest) {
       quiz: {
         id: quizId,
         title,
-        questions: questions.map((question, index) => ({
-          id: index + 1,
-          question_text: question.question,
-          options: question.options,
-          explanation: question.explanation
-        }))
+        questions: createdQuestions
       }
     }, { status: 201 });
   } catch (error) {
