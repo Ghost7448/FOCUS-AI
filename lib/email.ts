@@ -1,18 +1,25 @@
-import nodemailer from "nodemailer";
-
 export async function sendSecurityEmail(to: string, subject: string, html: string) {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM) {
+  const { RESEND_API_KEY, RESEND_FROM } = process.env;
+
+  if (!RESEND_API_KEY || !RESEND_FROM) {
     if (process.env.NODE_ENV !== "production" && process.env.EMAIL_VERIFICATION_REQUIRED === "false") return false;
-    throw new Error("Email delivery is not configured. Set the SMTP environment variables.");
+    throw new Error("Email delivery is not configured. Set RESEND_API_KEY and RESEND_FROM.");
   }
 
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT || 587),
-    secure: Number(SMTP_PORT || 587) === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASSWORD }
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ from: RESEND_FROM, to: [to], subject, html })
   });
-  await transporter.sendMail({ from: SMTP_FROM, to, subject, html });
+
+  if (!response.ok) {
+    const details = await response.text();
+    console.error("Resend API error:", response.status, details.slice(0, 500));
+    throw new Error(`Resend email request failed with status ${response.status}.`);
+  }
+
   return true;
 }
