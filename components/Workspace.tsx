@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BookOpen, BrainCircuit, ChartNoAxesCombined, ClipboardList, GraduationCap,
+  BookOpen, BrainCircuit, ChartNoAxesCombined, ClipboardList,
   LayoutDashboard, LogOut, Mic, Settings, Timer, Users, FilePlus2, ArrowUpRight,
   LockKeyhole, Sparkles
 } from "lucide-react";
