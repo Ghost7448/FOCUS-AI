@@ -47,9 +47,32 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
     if (!file) return;
     setUploading(true);
     setError("");
+    if (file.size > 30 * 1024 * 1024) {
+      setError(t("Files must be 30 MB or smaller."));
+      event.target.value = "";
+      return;
+    }
     const form = new FormData();
     form.append("tool", tool);
-    form.append("file", file);
+    form.append("originalName", file.name);
+    form.append("originalMimeType", file.type || (file.name.toLowerCase().endsWith(".pdf") ? "application/pdf" : ""));
+    form.append("originalSize", String(file.size));
+    let uploadFile: Blob = file;
+    let compression = "none";
+    try {
+      if (typeof CompressionStream !== "undefined") {
+        const compressed = await new Response(file.stream().pipeThrough(new CompressionStream("gzip"))).blob();
+        if (compressed.size < file.size) {
+          uploadFile = compressed;
+          compression = "gzip";
+        }
+      }
+    } catch {
+      uploadFile = file;
+      compression = "none";
+    }
+    form.append("compression", compression);
+    form.append("file", new File([uploadFile], file.name, { type: file.type || "application/octet-stream" }));
     try {
       const response = await fetch("/api/study-files", { method: "POST", body: form });
       const data = await response.json();
@@ -124,7 +147,7 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
         <div>
           <h3 className="font-bold text-brand-900">{t("Upload study material")}</h3>
           <p className="mt-1 text-sm leading-6 muted">
-            {tool === "book" ? t("PDF files up to 10 MB.") : t("PDF or audio files up to 10 MB.")}
+            {tool === "book" ? t("PDF files up to 30 MB.") : t("PDF or audio files up to 30 MB.")}
           </p>
         </div>
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-amber-800 px-4 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-amber-900">
