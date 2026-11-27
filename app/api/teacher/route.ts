@@ -108,7 +108,9 @@ export async function POST(request: NextRequest) {
       const prompt = `Create exactly ${input.count} ${input.difficulty} multiple-choice questions about "${input.topic}". Language: ${input.language === "ar" ? "Arabic" : "English"}. Return ONLY valid JSON array. Each item: {"question":"...","options":["A","B","C","D"],"answer":0,"explanation":"..."}. answer is zero-based index.`;
       const raw = await generateGeminiText([{ role: "user", parts: [{ text: prompt }] }], "You create fair educational assessments. Return valid JSON only, no markdown.", 3000);
       const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-      const questions = JSON.parse(cleaned);
+      let questions: any[];
+      try { questions = JSON.parse(cleaned); }
+      catch { return NextResponse.json({ error: "The AI returned unreadable exam data. Please generate it again." }, { status: 502 }); }
       if (!Array.isArray(questions) || questions.length !== input.count || questions.some((q: any) => typeof q.question !== "string" || !Array.isArray(q.options) || q.options.length !== 4 || !Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3)) {
         return NextResponse.json({ error: "The AI returned an invalid exam. Please generate it again." }, { status: 502 });
       }
