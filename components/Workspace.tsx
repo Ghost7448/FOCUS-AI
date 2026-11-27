@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BookOpen, BrainCircuit, ChartNoAxesCombined, ClipboardList,
   LayoutDashboard, LogOut, Mic, Settings, Timer, Users, FilePlus2, ArrowUpRight,
-  LockKeyhole, Sparkles
+  LockKeyhole, Sparkles, Menu, X
 } from "lucide-react";
 import Brand from "@/components/Brand";
 import TutorChat from "@/components/TutorChat";
@@ -51,7 +51,34 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
   const items = role === "student" ? studentItems : role === "teacher" ? teacherItems : adminItems;
   const title = role === "student" ? "Student Workspace" : role === "teacher" ? "Teacher Workspace" : "Admin Workspace";
   const [active, setActive] = useState<Item | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(`focus-ai:last-workspace:${role}`);
+      if (saved === "dashboard") return;
+      const match = items.find((item) => item.label === saved);
+      if (match) setActive(match);
+    } catch {
+      // Keep the dashboard available if browser storage is disabled.
+    }
+  }, [role, items]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(`focus-ai:last-workspace:${role}`, active?.label ?? "dashboard");
+    } catch {
+      // Workspace navigation still works without persistent storage.
+    }
+  }, [active, role]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [menuOpen]);
 
   async function signOut() {
     setSigningOut(true);
@@ -70,12 +97,12 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
       <Brand />
       <p className="mt-8 px-3 text-xs font-bold uppercase tracking-wider muted">{t("Workspace")}</p>
       <nav aria-label={t("Workspace")} className="mt-3 space-y-1">
-        <button type="button" onClick={() => setActive(null)} className={`workspace-nav-item ${!active ? "is-active" : ""}`}>
+        <button type="button" onClick={() => { setActive(null); setMenuOpen(false); }} className={`workspace-nav-item ${!active ? "is-active" : ""}`}>
           <LayoutDashboard size={18}/> {t("Dashboard")}
         </button>
         {items.map((item) => {
           const Icon = item.icon;
-          return <button type="button" key={item.label} onClick={() => setActive(item)} className={`workspace-nav-item ${active?.label === item.label ? "is-active" : ""}`}>
+          return <button type="button" key={item.label} onClick={() => { setActive(item); setMenuOpen(false); }} className={`workspace-nav-item ${active?.label === item.label ? "is-active" : ""}`}>
             <Icon size={18}/><span>{t(item.label)}</span><ArrowUpRight className="ml-auto opacity-50" size={15}/>
           </button>;
         })}
