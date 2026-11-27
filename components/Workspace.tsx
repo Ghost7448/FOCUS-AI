@@ -60,7 +60,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
       <p className="mt-8 px-3 text-xs font-bold uppercase tracking-wider muted">{t("Workspace")}</p>
       <nav aria-label={t("Workspace")} className="mt-3 space-y-1">
         <button type="button" onClick={() => setActive(null)} className={`workspace-nav-item ${!active ? "is-active" : ""}`}>
-          <LayoutDashboard size={18}/> Dashboard
+          <LayoutDashboard size={18}/> {t("Dashboard")}
         </button>
         {items.map((item) => {
           const Icon = item.icon;
@@ -78,7 +78,7 @@ export default function Workspace({ role, name }: { role: Role; name: string }) 
       <div className="mx-auto max-w-5xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div><p className="text-sm muted">{t(title)}</p><h1 className="mt-1 text-3xl font-extrabold text-brand-900">{t("Welcome,")} {name}</h1></div>
-          <span className="role-pill capitalize">{role}</span>
+          <span className="role-pill capitalize">{t(role === "student" ? "Student" : role === "teacher" ? "Teacher" : "Admin")}</span>
         </div>
 
         {!active ? <>
