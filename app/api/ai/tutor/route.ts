@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
@@ -18,7 +18,7 @@ type MessageRow = RowDataPacket & {
   content: string;
 };
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
 
