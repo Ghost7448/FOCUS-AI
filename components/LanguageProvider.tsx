@@ -157,6 +157,7 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Please wait...": { en: "Please wait...", ar: "استنى..." },
   "No classes assigned": { en: "No classes assigned", ar: "مفيش فصول مضافة" },
   "Draft": { en: "Draft", ar: "مسودة" },
+  "Publish": { en: "Publish", ar: "نشر" },
   "published": { en: "Published", ar: "منشور" },
   "draft": { en: "Draft", ar: "مسودة" },
   "Reset your password": { en: "Reset your password", ar: "إعادة تعيين كلمة المرور" },
