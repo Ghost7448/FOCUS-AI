@@ -181,7 +181,7 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
             </div>
             <button type="button" disabled={busyId === file.id} onClick={() => void analyzeFile(file.id)} className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-amber-900 transition hover:bg-amber-800/10 disabled:opacity-50">
               {busyId === file.id ? <Loader2 size={16} className="animate-spin"/> : <Sparkles size={16}/>}
-              {file.analysis ? t("Analyze again") : t("Analyze with Gemini")}
+              {file.analysis ? t("Analyze again") : t("Analyze with FOCUS AI")}
             </button>
             <a className="rounded-lg p-2 text-brand-800 transition hover:bg-amber-800/10" href={"/api/study-files/" + file.id} aria-label={t("Download")} title={t("Download")}><Download size={18}/></a>
             <button type="button" disabled={busyId === file.id} onClick={() => void removeFile(file.id)} className="rounded-lg p-2 text-red-600 transition hover:bg-red-500/10 disabled:opacity-50" aria-label={t("Delete")} title={t("Delete")}>
@@ -192,7 +192,7 @@ export default function StudyFiles({ tool }: { tool: ToolType }) {
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <input value={questions[file.id] || ""} onChange={(event) => setQuestions((current) => ({ ...current, [file.id]: event.target.value }))} maxLength={2000} placeholder={t("Ask a question about this file...")} className="min-w-0 flex-1 rounded-xl border border-black/10 bg-transparent px-3 py-2 text-sm"/>
             <button type="button" disabled={busyId === file.id || !(questions[file.id] || "").trim()} onClick={() => void askFile(file.id)} className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-800/25 px-4 py-2 text-sm font-bold text-amber-900 disabled:opacity-50">
-              {busyId === file.id ? <Loader2 size={15} className="animate-spin"/> : <Sparkles size={15}/>} {t("Ask Gemini")}
+              {busyId === file.id ? <Loader2 size={15} className="animate-spin"/> : <Sparkles size={15}/>} {t("Ask FOCUS AI")}
             </button>
           </div>
           {answers[file.id] && <div className="mt-3 whitespace-pre-wrap rounded-xl border border-amber-800/15 p-4 text-sm leading-7 text-brand-900">{answers[file.id]}</div>}
