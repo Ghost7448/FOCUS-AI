@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -85,6 +86,7 @@ export async function POST(
       "INSERT INTO quiz_attempts (quiz_id, user_id, score, answers_json, completed_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())",
       [params.id, user.id, score, JSON.stringify(parsed.data.answers)]
     );
+    await writeAuditLog({ actorUserId:user.id, action:"quiz_submitted", entityType:"quiz", entityId:Number(params.id), metadata:{ score, correctCount:review.filter((item) => item.correct).length, totalQuestions:rows.length } });
     return NextResponse.json({ score, correctCount: review.filter((item) => item.correct).length, totalQuestions: rows.length, review });
   } catch (error) {
     console.error("Quiz submission failed:", error);
