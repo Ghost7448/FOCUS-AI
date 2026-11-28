@@ -768,3 +768,42 @@ input[type="date"]:disabled { opacity: .5; cursor: not-allowed; }
     min-width:0;
   }
 }
+
+/* FOCUS AI custom cursor — B4-Class smooth ring/dot/trail, warm brown palette. */
+@media (hover:hover) and (pointer:fine){
+  html,html *,body,body *{cursor:none!important}
+  .focus-cursor-ring,.focus-cursor-dot,.focus-cursor-trail{
+    position:fixed;top:0;left:0;pointer-events:none;z-index:100000;
+    opacity:0;will-change:transform;transition:opacity .18s ease;
+  }
+  .focus-cursor-ring{
+    width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;
+    border:2px solid #9a6848;
+    box-shadow:0 0 15px rgba(139,91,59,.48),0 0 3px rgba(255,245,235,.55);
+    transition:width .18s ease,height .18s ease,margin .18s ease,border-color .18s ease,box-shadow .18s ease,opacity .18s ease;
+  }
+  .focus-cursor-dot{
+    width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;
+    background:#75472f;box-shadow:0 0 10px rgba(117,71,47,.72),0 0 3px rgba(255,245,235,.6);
+  }
+  .focus-cursor-trail{
+    width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;
+    background:rgba(154,104,72,.25);filter:blur(2px);
+  }
+  body.focus-cursor-ready .focus-cursor-ring,
+  body.focus-cursor-ready .focus-cursor-dot,
+  body.focus-cursor-ready .focus-cursor-trail{opacity:1}
+  body.focus-cursor-hover .focus-cursor-ring{
+    width:35px;height:35px;margin:-17.5px 0 0 -17.5px;
+    border-color:#75472f;box-shadow:0 0 22px rgba(117,71,47,.58);
+  }
+  body.focus-cursor-hover .focus-cursor-trail{width:19px;height:19px;margin:-9.5px 0 0 -9.5px;background:rgba(154,104,72,.34)}
+  body.focus-cursor-click .focus-cursor-ring{width:17px;height:17px;margin:-8.5px 0 0 -8.5px}
+}
+.dark .focus-cursor-ring{border-color:#c49a79;box-shadow:0 0 16px rgba(196,154,121,.58)}
+.dark .focus-cursor-dot{background:#e0b895;box-shadow:0 0 11px rgba(224,184,149,.75)}
+.dark .focus-cursor-trail{background:rgba(196,154,121,.28)}
+.dark body.focus-cursor-hover .focus-cursor-ring{border-color:#e0b895;box-shadow:0 0 23px rgba(196,154,121,.68)}
+@media (pointer:coarse){
+  .focus-cursor-ring,.focus-cursor-dot,.focus-cursor-trail{display:none!important}
+}
