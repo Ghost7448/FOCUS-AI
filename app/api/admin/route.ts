@@ -15,13 +15,17 @@ const schema = z.discriminatedUnion("action",[
   z.object({action:z.literal("update_settings"),settings:z.object({allow_student_registration:z.boolean(),allow_teacher_registration:z.boolean(),require_email_verification:z.boolean(),maintenance_mode:z.boolean()})})
 ]);
 
-export async function GET(){
+export async function GET(request:NextRequest){
   const admin=await getCurrentUser();
   if(!admin || admin.role!=="admin") return NextResponse.json({error:"Admin access required."},{status:403});
   try{
-    const [users]=await db.execute<RowDataPacket[]>(
-      "SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 500"
-    );
+    let users: RowDataPacket[] = [];
+    if(request.nextUrl.searchParams.get("includeUsers")==="1"){
+      const [rows]=await db.execute<RowDataPacket[]>(
+        "SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 100"
+      );
+      users=rows;
+    }
     const [counts]=await db.execute<RowDataPacket[]>(
       "SELECT COUNT(*) AS total_users,SUM(role='student') AS students,SUM(role='teacher') AS teachers,SUM(role='admin') AS admins,SUM(status='suspended') AS suspended FROM users"
     );
