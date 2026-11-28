@@ -26,7 +26,7 @@ export default function AdminTools({tool}:{tool:"User Management"|"Platform Sett
  async function load(){
   setLoading(true);setError("");
   try{
-   const response=await fetch("/api/admin",{cache:"no-store"});
+   const response=await fetch(`/api/admin?includeUsers=${tool==="User Management"?"1":"0"}`,{cache:"no-store"});
    const data=await response.json();
    if(!response.ok)throw new Error(data.error||"Could not load admin data.");
    setUsers(data.users||[]);
@@ -42,7 +42,7 @@ export default function AdminTools({tool}:{tool:"User Management"|"Platform Sett
   }catch(e){setError(e instanceof Error?e.message:"Could not load admin data.");}
   finally{setLoading(false);}
  }
- useEffect(()=>{void load();},[]);
+ useEffect(()=>{void load();},[tool]);
 
  async function send(payload:Record<string,unknown>){
   setBusy(true);setError("");setNotice("");
