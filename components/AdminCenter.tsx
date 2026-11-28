@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Activity, Settings, Users, Eye, RefreshCw, Search, CalendarDays } from "lucide-react";
+import { Activity, Settings, Users, Eye, RefreshCw, Search } from "lucide-react";
 import AdminTools from "@/components/AdminTools";
 import CustomSelect from "@/components/CustomSelect";
 import DatePicker from "@/components/DatePicker";
@@ -42,7 +42,7 @@ export default function AdminCenter() {
   async function loadLogs() {
     setLoading(true); setError("");
     try {
-      const params = new URLSearchParams({q:search,category,limit:"100"});
+      const params = new URLSearchParams({q:search,category,limit:"50"});
       if(from) params.set("from",from);
       if(to) params.set("to",to);
       const response = await fetch("/api/admin/logs?"+params.toString(),{cache:"no-store"});
@@ -87,17 +87,17 @@ export default function AdminCenter() {
     {section==="Platform Settings" || section==="User Management" ? <AdminTools tool={section}/> : null}
 
     {section==="Logs" && <section className="card space-y-4 p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-extrabold">{t("Activity Logs")}</h3><p className="text-sm muted">{t("Site activity, account security, admin changes and page visits.")}</p></div><button type="button" onClick={()=>void loadLogs()} className="workspace-back"><RefreshCw size={16}/>{t("Refresh")}</button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-extrabold">{t("Activity Logs")}</h3><p className="text-sm muted">{t("Site activity, account security and admin changes.")}</p></div><button type="button" onClick={()=>void loadLogs()} className="workspace-back"><RefreshCw size={16}/>{t("Refresh")}</button></div>
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <label className="relative"><Search className="absolute left-3 top-3.5 muted" size={16}/><input className="field w-full pl-9" value={search} onChange={e=>setSearch(e.target.value)} placeholder={t("Search logs...")}/></label>
-        <CustomSelect className="w-full" value={category} onChange={setCategory} options={[{value:"all",label:t("All categories")},{value:"auth",label:t("Authentication")},{value:"users",label:t("Users")},{value:"platform",label:t("Platform")},{value:"learning",label:t("Learning")},{value:"content",label:t("Content")},{value:"navigation",label:t("Page visits")}]}/>
+        <CustomSelect className="w-full" value={category} onChange={setCategory} options={[{value:"all",label:t("All categories")},{value:"auth",label:t("Authentication")},{value:"users",label:t("Users")},{value:"platform",label:t("Platform")},{value:"learning",label:t("Learning")},{value:"content",label:t("Content")}]}/>
         <DatePicker ariaLabel="From date" className="min-w-0 w-full" value={from} onChange={setFrom} locale={language}/>
         <DatePicker ariaLabel="To date" className="min-w-0 w-full" value={to} onChange={setTo} locale={language}/>
       </div>
       <div className="flex justify-end"><button type="button" onClick={()=>void loadLogs()} className="btn btn-primary">{t("Apply filters")}</button></div>
       {error&&<p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {loading?<p className="muted">{t("Loading...")}</p>:<div className="space-y-3">
-        <p className="text-xs muted">{logs.length.toLocaleString()} {t("events loaded (up to 100)")}</p>
+        <p className="text-xs muted">{logs.length.toLocaleString()} {t("events loaded (up to 50)")}</p>
         {logs.map(log=><details key={log.id} className="rounded-xl border border-black/10 p-4 dark:border-white/10">
           <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3"><span><b className="block text-sm">{log.action.replace(/_/g," ")}</b><span className="text-xs muted">{log.actor_name||log.actor_email||t("Guest")} · {log.entity_type||t("Event")}{log.entity_id? " #"+log.entity_id:""}</span></span><span className="text-xs muted">{displayDate(log.created_at)}</span></summary>
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2"><p><b>{t("IP Address")}:</b> {log.ip_address||"—"}</p><p><b>{t("Actor ID")}:</b> {log.actor_user_id||"Guest"}</p><p><b>{t("Entity")}:</b> {log.entity_type||"—"} {log.entity_id||""}</p></div>
