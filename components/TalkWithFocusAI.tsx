@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Mic, MicOff, PhoneOff, Send, Volume2, LoaderCircle } from "lucide-react";
+import { Mic, PhoneOff, Send, Volume2 } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -20,7 +20,7 @@ type SpeechWindow = Window & {
 };
 
 export default function TalkWithFocusAI() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [callActive, setCallActive] = useState(false);
@@ -73,7 +73,7 @@ export default function TalkWithFocusAI() {
       const response = await fetch("/api/ai/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: `أجبني باللغة العربية باللهجة المصرية بشكل طبيعي وواضح. لو سؤالي فيه مصطلحات إنجليزية اشرحها بالعربي واحتفظ بالمصطلح الإنجليزي عند الحاجة.\n\nرسالة المستخدم: ${message}`, conversationId })
+        body: JSON.stringify({ message, conversationId, voiceMode: true })
       });
       if (!response.ok || !response.body) {
         const data = await response.json().catch(() => null);
@@ -104,7 +104,9 @@ export default function TalkWithFocusAI() {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(answer);
         utterance.lang = "ar-EG";
-        utterance.rate = 1;
+        const arabicVoices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith("ar"));
+        utterance.voice = arabicVoices.find((voice) => voice.lang.toLowerCase() === "ar-eg") || arabicVoices[0] || null;
+        utterance.rate = 1.02;
         utterance.onstart = () => setSpeaking(true);
         utterance.onend = () => {
           setSpeaking(false);
