@@ -4,6 +4,7 @@ import Link from "next/link";
 import { GraduationCap, Presentation, ArrowLeft, LoaderCircle } from "lucide-react";
 import Brand from "@/components/Brand";
 import { useLanguage } from "@/components/LanguageProvider";
+import CustomSelect from "@/components/CustomSelect";
 
 type Role = "student" | "teacher";
 
@@ -57,12 +58,12 @@ export default function RegisterForm() {
       <label className="block text-sm font-semibold">{t("Full name")}<input className="field mt-2" name="fullName" required autoComplete="name"/></label>
       <label className="block text-sm font-semibold">{t("Email")}<input className="field mt-2" name="email" type="email" required autoComplete="email"/></label>
       {role === "student" ? <>
-        <label className="block text-sm font-semibold">{t("Education level")}<select className="field mt-2" name="educationLevel"><option value="school">{t("School")}</option><option value="university">{t("University")}</option></select></label>
+        <label className="block text-sm font-semibold">{t("Education level")}<CustomSelect className="mt-2" name="educationLevel" defaultValue="school" options={[{value:"school",label:t("School")},{value:"university",label:t("University")}]}/></label>
         <label className="block text-sm font-semibold">{t("Grade / Academic year")}<input className="field mt-2" name="grade" placeholder={t("e.g. Grade 11 or Year 1")}/></label>
-        <label className="block text-sm font-semibold">{t("Preferred language")}<select className="field mt-2" name="language"><option value="ar">{t("Arabic")}</option><option value="en">{t("English")}</option></select></label>
+        <label className="block text-sm font-semibold">{t("Preferred language")}<CustomSelect className="mt-2" name="language" defaultValue="ar" options={[{value:"ar",label:t("Arabic")},{value:"en",label:t("English")}]}/></label>
       </> : <>
         <label className="block text-sm font-semibold">{t("Teaching subject / specialization")}<input className="field mt-2" name="teachingSubject" required placeholder={t("e.g. Mathematics")}/></label>
-        <label className="block text-sm font-semibold">{t("Education level")}<select className="field mt-2" name="teacherLevel"><option value="school">{t("School")}</option><option value="university">{t("University")}</option><option value="both">{t("Both")}</option></select></label>
+        <label className="block text-sm font-semibold">{t("Education level")}<CustomSelect className="mt-2" name="teacherLevel" defaultValue="school" options={[{value:"school",label:t("School")},{value:"university",label:t("University")},{value:"both",label:t("Both")}]}/></label>
         <label className="block text-sm font-semibold">{t("School / Institution (optional)")}<input className="field mt-2" name="institution"/></label>
       </>}
       <label className="block text-sm font-semibold">{t("Password")} (10+ characters, upper/lowercase and number)<input className="field mt-2" name="password" type="password" minLength={10} required autoComplete="new-password"/></label>
