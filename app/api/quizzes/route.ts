@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
-import { generateGeminiText } from "@/lib/gemini";
+import { generateFocusText } from "@/lib/ai-provider";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       parsed.data.sourceText
     ].join("\n\n");
 
-    const generated = await generateGeminiText(
+    const generated = await generateFocusText(
       [{ role: "user", parts: [{ text: prompt }] }],
       "You are FOCUS AI Quiz Creator. Produce valid JSON and never invent facts beyond the supplied study material.",
       5000
@@ -155,11 +155,11 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    if (code === "GEMINI_NOT_CONFIGURED") {
-      return NextResponse.json({ error: "Gemini is not configured. Add GEMINI_API_KEY to Railway Variables." }, { status: 503 });
+    if (code === "GROQ_NOT_CONFIGURED") {
+      return NextResponse.json({ error: "FOCUS AI needs GROQ_API_KEY in Railway Variables because the primary AI service is unavailable." }, { status: 503 });
     }
     if (code === "QUIZ_INVALID_JSON") {
-      return NextResponse.json({ error: "Gemini returned an invalid quiz. Please try generating it again." }, { status: 502 });
+      return NextResponse.json({ error: "FOCUS AI returned an invalid quiz. Please try generating it again." }, { status: 502 });
     }
     console.error("Quiz generation failed:", error);
     return NextResponse.json({ error: "Could not generate this quiz right now." }, { status: 502 });
