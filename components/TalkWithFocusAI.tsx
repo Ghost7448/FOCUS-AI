@@ -38,7 +38,7 @@ export default function TalkWithFocusAI() {
     if (!SpeechRecognitionCtor || !activeRef.current || busyRef.current) return;
     try {
       const recognition = new SpeechRecognitionCtor();
-      recognition.lang = language === "ar" ? "ar-EG" : "en-US";
+      recognition.lang = "ar-EG";
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.onresult = (event) => {
@@ -73,7 +73,7 @@ export default function TalkWithFocusAI() {
       const response = await fetch("/api/ai/tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, conversationId })
+        body: JSON.stringify({ message: `أجبني باللغة العربية باللهجة المصرية بشكل طبيعي وواضح. لو سؤالي فيه مصطلحات إنجليزية اشرحها بالعربي واحتفظ بالمصطلح الإنجليزي عند الحاجة.\n\nرسالة المستخدم: ${message}`, conversationId })
       });
       if (!response.ok || !response.body) {
         const data = await response.json().catch(() => null);
@@ -103,7 +103,7 @@ export default function TalkWithFocusAI() {
       if (answer.trim() && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(answer);
-        utterance.lang = language === "ar" ? "ar-EG" : "en-US";
+        utterance.lang = "ar-EG";
         utterance.rate = 1;
         utterance.onstart = () => setSpeaking(true);
         utterance.onend = () => {
