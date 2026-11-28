@@ -15,9 +15,9 @@ export async function GET(request: NextRequest) {
   const category = params.get("category") || "all";
   const from = params.get("from");
   const to = params.get("to");
-  const requestedLimit = Number(params.get("limit") || 100);
-  const limit = Number.isInteger(requestedLimit) ? Math.min(100, Math.max(20, requestedLimit)) : 100;
-  const conditions: string[] = [];
+  const requestedLimit = Number(params.get("limit") || 50);
+  const limit = Number.isInteger(requestedLimit) ? Math.min(50, Math.max(10, requestedLimit)) : 50;
+  const conditions: string[] = ["l.action <> 'page_view'"];
   const values: string[] = [];
 
   if (search) {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
          ${where} ORDER BY l.created_at DESC,l.id DESC LIMIT ${limit}`,
       values
     );
-    const [countRows] = await db.execute<RowDataPacket[]>("SELECT COUNT(*) total FROM audit_logs");
+    const [countRows] = await db.execute<RowDataPacket[]>("SELECT COUNT(*) total FROM audit_logs WHERE action <> 'page_view'");
     const response = NextResponse.json({ logs: rows, total: Number(countRows[0]?.total || 0) });
     response.headers.set("Cache-Control", "private, no-store");
     return response;
