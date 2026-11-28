@@ -9,6 +9,6 @@ export default function CustomSelect({value,onChange,options,placeholder,classNa
  return <div ref={root} className={"focus-select-wrap "+className}>{name&&<input type="hidden" name={name} value={value}/>}
  <button type="button" aria-label={ariaLabel} aria-haspopup="listbox" aria-expanded={open} disabled={disabled} onClick={()=>setOpen(v=>!v)} className={"focus-select-trigger "+(open?"is-open":"")}>
  <span className={value?"focus-select-value":"focus-select-placeholder"}>{selected?.label||placeholder||"Select..."}</span><ChevronDown size={19} className="focus-select-chevron"/></button>
- {open&&<div className="focus-select-menu" role="listbox">{options.map(o=><button type="button" role="option" aria-selected={o.value===value} key={o.value} disabled={o.disabled} onClick={()=>{change(o.value);setOpen(false)}} className={"focus-select-option "+(o.value===value?"selected":"")}><span>{o.label}</span>{o.value===value&&<Check size={17}/>}</button>)}{options.length===0&&<p className="focus-select-empty">No options</p>}</div>}
+ {open&&<div className="focus-select-menu" role="listbox">{options.map(o=><button type="button" role="option" aria-selected={o.value===value} key={o.value} disabled={o.disabled} onClick={()=>{onChange?.(o.value);setOpen(false)}} className={"focus-select-option "+(o.value===value?"selected":"")}><span>{o.label}</span>{o.value===value&&<Check size={17}/>}</button>)}{options.length===0&&<p className="focus-select-empty">No options</p>}</div>}
  </div>;
 }
