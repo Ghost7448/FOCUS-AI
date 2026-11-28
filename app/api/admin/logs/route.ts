@@ -15,9 +15,10 @@ export async function GET(request: NextRequest) {
   const category = params.get("category") || "all";
   const from = params.get("from");
   const to = params.get("to");
-  const limit = Math.min(1000, Math.max(50, Number(params.get("limit") || 500)));
+  const requestedLimit = Number(params.get("limit") || 500);
+  const limit = Number.isInteger(requestedLimit) ? Math.min(1000, Math.max(50, requestedLimit)) : 500;
   const conditions: string[] = [];
-  const values: unknown[] = [];
+  const values: string[] = [];
 
   if (search) {
     conditions.push("(l.action LIKE ? OR l.entity_type LIKE ? OR COALESCE(u.full_name,'') LIKE ? OR COALESCE(u.email,'') LIKE ? OR CAST(l.metadata AS CHAR) LIKE ?)");
