@@ -60,10 +60,38 @@ export default function TutorChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: cleanMessage, conversationId })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not contact the tutor.");
-      setConversationId(data.conversationId);
-      setMessages((current) => [...current, { role: "assistant", content: data.answer }]);
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Could not contact the tutor.");
+      }
+      const id = Number(response.headers.get("X-Conversation-Id"));
+      if (Number.isFinite(id) && id > 0) setConversationId(id);
+      if (!response.body) throw new Error("Streaming is not supported by this connection.");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let answer = "";
+      setMessages((current) => [...current, { role: "assistant", content: "" }]);
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        answer += decoder.decode(value, { stream: true });
+        setMessages((current) => {
+          const next = [...current];
+          const last = next[next.length - 1];
+          if (last?.role === "assistant") next[next.length - 1] = { role: "assistant", content: answer };
+          return next;
+        });
+      }
+      const tail = decoder.decode();
+      if (tail) {
+        answer += tail;
+        setMessages((current) => {
+          const next = [...current];
+          const last = next[next.length - 1];
+          if (last?.role === "assistant") next[next.length - 1] = { role: "assistant", content: answer };
+          return next;
+        });
+      }
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Something went wrong.");
     } finally {
