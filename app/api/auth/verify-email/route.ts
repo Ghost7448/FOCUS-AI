@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     [hashToken(token)]
   );
   const record = (rows as {user_id:number}[])[0];
-  if (!record) return NextResponse.redirect(new URL("/account-activated?status=invalid", request.url));
+  if (!record) return NextResponse.redirect(new URL("/account-activated?status=invalid", getAppOrigin(request.nextUrl.origin)));
   await db.execute("UPDATE users SET email_verified = 1, updated_at = UTC_TIMESTAMP() WHERE id = ?", [record.user_id]);
   await db.execute("DELETE FROM email_verification_tokens WHERE user_id = ?", [record.user_id]);
   return NextResponse.redirect(new URL("/account-activated", getAppOrigin(request.nextUrl.origin)));
