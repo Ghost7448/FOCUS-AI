@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
         "FROM focus_sessions WHERE id = ? AND user_id = ? LIMIT 1",
         [result.insertId, user.id]
       );
+      await writeAuditLog({ actorUserId:user.id, action:"focus_session_started", entityType:"focus_session", entityId:result.insertId, metadata:{ plannedMinutes:planned } });
       return NextResponse.json({ activeSession: created[0] }, { status: 201 });
     }
 
@@ -74,6 +76,7 @@ export async function POST(request: NextRequest) {
         [completed, status, sessionId, user.id]
       );
       if (!result.affectedRows) return NextResponse.json({ error: "Focus session not found." }, { status: 404 });
+      await writeAuditLog({ actorUserId:user.id, action:status==="completed"?"focus_session_completed":"focus_session_cancelled", entityType:"focus_session", entityId:sessionId, metadata:{ completedMinutes:completed } });
       return NextResponse.json({ success: true });
     }
 
