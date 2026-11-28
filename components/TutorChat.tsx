@@ -7,28 +7,28 @@ import { useLanguage } from "@/components/LanguageProvider";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 function renderInline(text: string): ReactNode[] {
-  const parts = text.split(/(\\*\\*[^*]+\\*\\*|`[^`]+`|\\[[^\\]]+\\]\\(https?:\\/\\/[^\\s)]+\\))/g).filter(Boolean);
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g).filter(Boolean);
   return parts.map((part, index) => {
     if (part.startsWith("**") && part.endsWith("**")) return <strong key={index} className="font-extrabold">{part.slice(2, -2)}</strong>;
     if (part.startsWith("`") && part.endsWith("`")) return <code key={index} className="rounded-md px-1.5 py-0.5 font-mono text-[.92em]" style={{background:"var(--accent-soft)"}}>{part.slice(1,-1)}</code>;
-    const link = part.match(/^\\[([^\\]]+)\\]\\((https?:\\/\\/[^\\s)]+)\\)$/);
+    const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
     if (link) return <a key={index} href={link[2]} target="_blank" rel="noopener noreferrer" className="font-bold underline underline-offset-2" style={{color:"var(--accent-strong)"}}>{link[1]}</a>;
     return part;
   });
 }
 
 function FormattedMessage({ content }: { content: string }) {
-  const lines = content.replace(/\\r/g, "").split("\\n");
+  const lines = content.replace(/\r/g, "").split("\n");
   return <div className="space-y-2 break-words">
     {lines.map((line, index) => {
-      const heading = line.match(/^(#{1,3})\\s+(.+)$/);
+      const heading = line.match(/^(#{1,3})\s+(.+)$/);
       if (heading) {
         const level = heading[1].length;
         const Tag = level === 1 ? "h3" : level === 2 ? "h4" : "h5";
         return <Tag key={index} className={level === 1 ? "text-xl font-extrabold leading-snug" : level === 2 ? "text-lg font-bold leading-snug" : "text-base font-bold leading-snug"}>{renderInline(heading[2])}</Tag>;
       }
-      const bullet = line.match(/^\\s*[-*]\\s+(.+)$/);
-      const numbered = line.match(/^\\s*\\d+[.)]\\s+(.+)$/);
+      const bullet = line.match(/^\s*[-*]\s+(.+)$/);
+      const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/);
       if (bullet || numbered) return <div key={index} className="flex gap-2 ps-1"><span className="font-bold" style={{color:"var(--accent-strong)"}}>{bullet ? "•" : "›"}</span><span>{renderInline((bullet || numbered)![1])}</span></div>;
       if (!line.trim()) return <div key={index} className="h-1" />;
       return <p key={index}>{renderInline(line)}</p>;
