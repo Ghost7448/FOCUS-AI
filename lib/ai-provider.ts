@@ -58,6 +58,15 @@ export async function reserveGeminiDailyRequest() {
   return Number(rows[0]?.request_count || 0) <= limit;
 }
 
+export async function markGeminiDailyQuotaExhausted() {
+  await ensureUsageTable();
+  await db.execute(
+    "INSERT INTO ai_provider_daily_usage (usage_date, provider, request_count) VALUES (?, 'gemini', ?) " +
+    "ON DUPLICATE KEY UPDATE request_count = GREATEST(request_count, VALUES(request_count))",
+    [cairoDateKey(), getGeminiDailyLimit()]
+  );
+}
+
 function toGroqMessages(contents: TextContent[], systemInstruction: string) {
   return [
     { role: "system", content: systemInstruction },
@@ -119,6 +128,7 @@ export async function generateFocusText(
         return await generateGeminiText(contents, systemInstruction, maxOutputTokens, geminiModelOverride);
       } catch (error) {
         if (!(error instanceof Error) || error.message !== "GEMINI_QUOTA_EXCEEDED") throw error;
+        await markGeminiDailyQuotaExhausted();
         console.warn("Primary AI daily quota reached; switching to fallback provider.");
       }
     }
