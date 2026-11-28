@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { createGroqTutorStream, markGeminiDailyQuotaExhausted, reserveGeminiDailyRequest } from "@/lib/ai-provider";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
           }
           if (answer.trim()) {
             await db.execute("INSERT INTO messages (conversation_id, role, content) VALUES (?, 'assistant', ?)", [responseConversationId, answer.trim()]);
+            await writeAuditLog({ actorUserId:user.id, action:"tutor_reply_generated", entityType:"conversation", entityId:responseConversationId, metadata:{ provider } });
           }
           controller.close();
         } catch (error) {
