@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       contents,
       "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student's language. Reply in the same language as the latest user message. Do not claim to have read files or sources that were not provided.",
       1800,
-      process.env.GEMINI_TUTOR_MODEL || "gemini-2.5-flash"
+      process.env.GEMINI_TUTOR_MODEL || "gemini-3.8-flash"
     );
 
     await db.execute(
