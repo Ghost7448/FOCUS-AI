@@ -5,6 +5,7 @@ import { db } from "@/lib/mysql";
 import { hashToken } from "@/lib/auth";
 import { sendSecurityEmail } from "@/lib/email";
 import { hasSameOrigin } from "@/lib/security";
+import { getAppOrigin } from "@/lib/app-url";
 
 export const runtime = "nodejs";
 
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         "INSERT INTO email_verification_tokens(user_id,token_hash,expires_at) VALUES(?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 24 HOUR))",
         [user.id, hashToken(token)]
       );
-      const url = `${process.env.APP_URL || request.nextUrl.origin}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+      const url = `${getAppOrigin(request.nextUrl.origin)}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
       await sendSecurityEmail(email, "Verify your FOCUS AI account",
         `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h2>Welcome to FOCUS AI</h2><p>Confirm your email address to activate your account.</p><p><a href="${url}">Verify email address</a></p><p>This link expires in 24 hours. If you did not create this account, ignore this email.</p></div>`);
     }
