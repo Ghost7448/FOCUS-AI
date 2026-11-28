@@ -55,7 +55,7 @@ export default function TutorChat() {
         <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-7" style={{ background: item.role === "user" ? "var(--accent-soft)" : "var(--page-2)", color: "var(--text)" }}>{item.content}</div>
         {item.role === "user" && <span className="workspace-icon grid h-9 w-9 shrink-0 place-items-center rounded-xl"><User size={17}/></span>}
       </div>)}
-      {loading && <div className="flex items-center gap-3 text-sm muted"><span className="workspace-icon grid h-9 w-9 place-items-center rounded-xl"><Sparkles size={17}/></span> {t("Gemini is thinking...")}</div>}
+      {loading && <div className="flex items-center gap-3 text-sm muted"><span className="workspace-icon grid h-9 w-9 place-items-center rounded-xl"><Sparkles size={17}/></span> {t("FOCUS AI is thinking...")}</div>}
     </div>
     {error && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     <form onSubmit={sendMessage} className="mt-4 flex items-end gap-3">
