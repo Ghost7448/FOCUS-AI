@@ -685,3 +685,56 @@ input[type="date"]:disabled { opacity: .5; cursor: not-allowed; }
     padding:15px;
   }
 }
+
+/* Calendar popup: enlarge the actual numbered date grid and give it breathing room. */
+.focus-date-popover{
+  width:min(100%,480px);
+  padding:20px;
+}
+.focus-calendar-head{
+  grid-template-columns:42px 42px minmax(0,1fr) 42px 42px;
+  gap:9px;
+  margin-bottom:22px;
+}
+.focus-calendar-head button{
+  min-height:44px;
+  border-radius:14px;
+}
+.focus-calendar-head strong{font-size:16px}
+.focus-calendar-week,
+.focus-calendar-days{gap:8px}
+.focus-calendar-week{margin-bottom:10px;font-size:13px}
+.focus-calendar-week span{padding:9px 0}
+.focus-calendar-day,
+.focus-calendar-blank{
+  min-height:46px;
+  aspect-ratio:auto;
+  border-radius:13px;
+}
+.focus-calendar-day{font-size:15px;font-weight:650}
+.focus-calendar-day.selected{font-size:15px}
+@media(max-width:520px){
+  .focus-date-popover{
+    width:calc(100vw - 24px);
+    max-width:480px;
+    padding:17px;
+    max-height:84dvh;
+    overflow-y:auto;
+  }
+  .focus-calendar-head{
+    grid-template-columns:38px 38px minmax(0,1fr) 38px 38px;
+    gap:6px;
+    margin-bottom:20px;
+  }
+  .focus-calendar-head button{min-height:42px}
+  .focus-calendar-head strong{font-size:15px}
+  .focus-calendar-week,
+  .focus-calendar-days{gap:6px}
+  .focus-calendar-week span{padding:8px 0}
+  .focus-calendar-day,
+  .focus-calendar-blank{
+    min-height:clamp(42px,11vw,52px);
+    border-radius:12px;
+  }
+  .focus-calendar-day{font-size:15px}
+}
