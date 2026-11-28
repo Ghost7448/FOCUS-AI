@@ -35,6 +35,7 @@ export async function GET(
     const stored = rows[0];
     if (!stored) return NextResponse.json({ error: "File not found." }, { status: 404 });
     const bytes = restoreStudyFile(stored.file_data, stored.compression_method);
+    await writeAuditLog({ actorUserId:user.id, action:"study_file_downloaded", entityType:"study_file", entityId:Number(params.id), metadata:{ fileName:stored.original_name } });
     return new NextResponse(new Uint8Array(bytes), {
       headers: {
         "Content-Type": stored.mime_type,
