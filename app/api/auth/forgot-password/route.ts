@@ -5,6 +5,7 @@ import { hashToken } from "@/lib/auth";
 import { sendSecurityEmail } from "@/lib/email";
 import { hasSameOrigin } from "@/lib/security";
 import { z } from "zod";
+import { writeAuditLog } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
     const [rows] = await db.execute("SELECT id FROM users WHERE email = ? AND email_verified = 1 AND status = 'active' LIMIT 1", [email]);
     const user = (rows as {id:number}[])[0];
     if (user) {
+      await writeAuditLog({ actorUserId:user.id, action:"password_reset_requested", entityType:"user", entityId:user.id, ipAddress:ip });
       await db.execute("DELETE FROM password_reset_tokens WHERE user_id = ?", [user.id]);
       const token = randomBytes(32).toString("base64url");
       await db.execute("INSERT INTO password_reset_tokens(user_id,token_hash,expires_at) VALUES(?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 30 MINUTE))", [user.id,hashToken(token)]);
