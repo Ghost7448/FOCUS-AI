@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Users, Settings, ShieldCheck, GraduationCap, BookOpen, ClipboardList, LoaderCircle, Save, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
+import CustomSelect from "@/components/CustomSelect";
 
 type AdminUser={id:number;email:string;full_name:string;role:"student"|"teacher"|"admin";status:"active"|"suspended"|"deleted";email_verified:number;created_at:string};
 type SettingKey="allow_student_registration"|"allow_teacher_registration"|"require_email_verification"|"maintenance_mode";
@@ -72,8 +73,8 @@ export default function AdminTools({tool}:{tool:"User Management"|"Platform Sett
     <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead><tr className="border-b text-xs muted"><th className="p-3">{t("User")}</th><th className="p-3">{t("Role")}</th><th className="p-3">{t("Status")}</th><th className="p-3">{t("Email verified")}</th><th className="p-3">{t("Action")}</th></tr></thead><tbody>
      {users.map(user=>{const draft=changes[user.id]||{role:user.role,status:user.status==="suspended"?"suspended" as const:"active" as const};return <tr key={user.id} className="border-b">
       <td className="p-3"><b>{user.full_name}</b><p className="text-xs muted">{user.email}</p></td>
-      <td className="p-3"><select disabled={user.id===currentAdminId} className="field min-w-28" value={draft.role} onChange={e=>setChanges(prev=>({...prev,[user.id]:{...draft,role:e.target.value as AdminUser["role"]}}))}><option value="student">{t("Student")}</option><option value="teacher">{t("Teacher")}</option><option value="admin">{t("Admin")}</option></select></td>
-      <td className="p-3"><select disabled={user.id===currentAdminId} className="field min-w-28" value={draft.status} onChange={e=>setChanges(prev=>({...prev,[user.id]:{...draft,status:e.target.value as "active"|"suspended"}}))}><option value="active">{t("Active")}</option><option value="suspended">{t("Suspended")}</option></select></td>
+      <td className="p-3"><CustomSelect disabled={user.id===currentAdminId} className="min-w-28" value={draft.role} onChange={v=>setChanges(prev=>({...prev,[user.id]:{...draft,role:v as AdminUser["role"]}}))} options={[{value:"student",label:t("Student")},{value:"teacher",label:t("Teacher")},{value:"admin",label:t("Admin")}]}/></td>
+      <td className="p-3"><CustomSelect disabled={user.id===currentAdminId} className="min-w-28" value={draft.status} onChange={v=>setChanges(prev=>({...prev,[user.id]:{...draft,status:v as "active"|"suspended"}}))} options={[{value:"active",label:t("Active")},{value:"suspended",label:t("Suspended")}]}/></td>
       <td className="p-3">{user.email_verified? t("Yes"):t("No")}</td>
       <td className="p-3"><button type="button" disabled={busy||user.id===currentAdminId|| (draft.role===user.role&&draft.status===user.status)} onClick={()=>void send({action:"update_user",userId:user.id,...draft})} className="btn btn-primary">{t("Save")}</button></td>
      </tr>;})}
