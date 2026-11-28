@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { ensureStudyFilesTable, MAX_STUDY_FILE_SIZE, restoreStudyFile } from "@/lib/study-files";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       "VALUES (?, ?, ?, ?, ?, ?, ?)",
       [user.id, tool, name, storedMimeType, originalBytes.length, bytes, compression]
     );
+    await writeAuditLog({ actorUserId:user.id, action:"study_file_uploaded", entityType:"study_file", entityId:result.insertId, metadata:{ tool, fileName:name, mimeType:storedMimeType, size:originalBytes.length } });
     return NextResponse.json({
       file: { id: result.insertId, tool_type: tool, original_name: name, mime_type: storedMimeType, file_size: originalBytes.length, compressed: compression === "gzip" }
     }, { status: 201 });
