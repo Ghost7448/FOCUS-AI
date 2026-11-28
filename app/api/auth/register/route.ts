@@ -38,7 +38,12 @@ export async function POST(request: NextRequest) {
     if (verificationRequired) {
       const token = randomBytes(32).toString("base64url");
       await db.execute("INSERT INTO email_verification_tokens(user_id,token_hash,expires_at) VALUES(?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 24 HOUR))", [userId,hashToken(token)]);
-      const url = `${process.env.APP_URL || request.nextUrl.origin}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+      const configuredAppUrl = (process.env.APP_URL || "").trim();
+      const configuredIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(configuredAppUrl);
+      const appOrigin = configuredAppUrl && !configuredIsLocal
+        ? configuredAppUrl.replace(/\/+$/, "")
+        : request.nextUrl.origin;
+      const url = `${appOrigin}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
       try {
         await sendSecurityEmail(input.email,"Verify your FOCUS AI account",
           `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h2>Welcome to FOCUS AI</h2><p>Confirm your email address to activate your account.</p><p><a href="${url}">Verify email address</a></p><p>This link expires in 24 hours. If you did not create this account, ignore this email.</p></div>`);
