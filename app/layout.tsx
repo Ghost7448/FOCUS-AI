@@ -3,6 +3,7 @@ import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import LanguageProvider from "@/components/LanguageProvider";
 import VisitorTracker from "@/components/VisitorTracker";
+import CustomCursor from "@/components/CustomCursor";
 
 export const metadata: Metadata = {
   title: "FOCUS AI | Your Personal AI Learning Companion",
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <LanguageProvider>
             {children}
             <VisitorTracker/>
+            <CustomCursor/>
           </LanguageProvider>
         </ThemeProvider>
       </body>
