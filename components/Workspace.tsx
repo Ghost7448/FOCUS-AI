@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BookOpen, BrainCircuit, ChartNoAxesCombined, ClipboardList,
-  LayoutDashboard, LogOut, Mic, Settings, Timer, Users, FilePlus2, ArrowUpRight,
+  LayoutDashboard, LogOut, Mic, Timer, Users, FilePlus2, ArrowUpRight,
   LockKeyhole, Sparkles, Menu, X, ShieldCheck
 } from "lucide-react";
 import Brand from "@/components/Brand";
