@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { ensureStudyFilesTable, restoreStudyFile } from "@/lib/study-files";
 import { generateGeminiText } from "@/lib/gemini";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
@@ -74,6 +75,7 @@ export async function POST(
       "INSERT INTO study_file_analyses (file_id, analysis) VALUES (?, ?)",
       [file.id, analysis]
     );
+    await writeAuditLog({ actorUserId:user.id, action:"study_file_analyzed", entityType:"study_file", entityId:file.id, metadata:{ tool:file.tool_type, fileName:file.original_name } });
     return NextResponse.json({ analysis });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
