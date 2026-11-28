@@ -49,6 +49,7 @@ export async function POST(
       return NextResponse.json({ error: "This file type cannot be analyzed." }, { status: 415 });
     }
 
+    const geminiMimeType = file.mime_type === "audio/x-m4a" ? "audio/mp4" : file.mime_type === "audio/x-wav" ? "audio/wav" : file.mime_type === "audio/mp3" ? "audio/mpeg" : file.mime_type;
     const task = isAudio
       ? "Transcribe the attached lecture recording faithfully, then provide a structured study summary. Include key topics, important terms, explanations, and five review questions. Mark unclear speech instead of guessing."
       : "Read the attached PDF as study material. Create a structured study guide with a concise overview, section-by-section key points, important definitions, and five review questions. Cite page numbers only when you can identify them in the document; never invent page references.";
@@ -61,12 +62,12 @@ export async function POST(
         role: "user",
         parts: [
           { text: "Analyze this uploaded study file: " + file.original_name + "\n" + prompt },
-          { inlineData: { mimeType: file.mime_type, data: originalBytes.toString("base64") } }
+          { inlineData: { mimeType: geminiMimeType, data: originalBytes.toString("base64") } }
         ]
       }],
       "You are FOCUS AI Study Assistant. Help students understand their own learning materials. Be accurate, structured, and do not invent content, quotations, transcripts, or page numbers.",
       8192,
-      isAudio ? (process.env.GEMINI_AUDIO_MODEL || "gemini-2.5-flash") : undefined
+      isAudio ? (process.env.GEMINI_AUDIO_MODEL || "gemini-3.5-flash") : undefined
     );
 
     await db.execute<ResultSetHeader>(
