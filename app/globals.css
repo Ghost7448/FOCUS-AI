@@ -807,3 +807,18 @@ input[type="date"]:disabled { opacity: .5; cursor: not-allowed; }
 @media (pointer:coarse){
   .focus-cursor-ring,.focus-cursor-dot,.focus-cursor-trail{display:none!important}
 }
+
+
+/* Keep FOCUS AI controls and admin navigation in the site's warm brown palette. */
+:root {
+  --control-accent: var(--accent);
+  --control-accent-strong: var(--accent-strong);
+  --control-accent-soft: color-mix(in srgb,var(--accent) 12%,transparent);
+  --control-popup-shadow: 0 22px 60px rgba(65,42,27,.16), 0 0 0 1px color-mix(in srgb,var(--accent) 8%,transparent);
+}
+.dark {
+  --control-accent: var(--accent);
+  --control-accent-strong: var(--accent-strong);
+  --control-accent-soft: color-mix(in srgb,var(--accent) 18%,transparent);
+  --control-popup-shadow: 0 22px 70px rgba(0,0,0,.48), 0 0 0 1px color-mix(in srgb,var(--accent) 12%,transparent);
+}
