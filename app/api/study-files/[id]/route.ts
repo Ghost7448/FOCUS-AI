@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { ensureStudyFilesTable, restoreStudyFile } from "@/lib/study-files";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -63,6 +64,7 @@ export async function DELETE(
       [params.id, user.id]
     );
     if (!result.affectedRows) return NextResponse.json({ error: "File not found." }, { status: 404 });
+    await writeAuditLog({ actorUserId:user.id, action:"study_file_deleted", entityType:"study_file", entityId:Number(params.id) });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Study file delete failed:", error);
