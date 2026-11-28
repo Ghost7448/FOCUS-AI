@@ -40,9 +40,12 @@ export async function POST(request: NextRequest) {
       await db.execute("INSERT INTO email_verification_tokens(user_id,token_hash,expires_at) VALUES(?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 24 HOUR))", [userId,hashToken(token)]);
       const configuredAppUrl = (process.env.APP_URL || "").trim();
       const configuredIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(configuredAppUrl);
+      const fallbackOrigin = process.env.NODE_ENV === "production"
+        ? "https://focus-ai-production-a7fd3f59.up.railway.app"
+        : request.nextUrl.origin;
       const appOrigin = configuredAppUrl && !configuredIsLocal
         ? configuredAppUrl.replace(/\/+$/, "")
-        : request.nextUrl.origin;
+        : fallbackOrigin;
       const url = `${appOrigin}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
       try {
         await sendSecurityEmail(input.email,"Verify your FOCUS AI account",
