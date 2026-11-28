@@ -19,19 +19,20 @@ export async function GET(request:NextRequest){
   const admin=await getCurrentUser();
   if(!admin || admin.role!=="admin") return NextResponse.json({error:"Admin access required."},{status:403});
   try{
-    let users: RowDataPacket[] = [];
-    if(request.nextUrl.searchParams.get("includeUsers")==="1"){
-      const [rows]=await db.execute<RowDataPacket[]>(
-        "SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 100"
-      );
-      users=rows;
-    }
-    const [counts]=await db.execute<RowDataPacket[]>(
-      "SELECT COUNT(*) AS total_users,SUM(role='student') AS students,SUM(role='teacher') AS teachers,SUM(role='admin') AS admins,SUM(status='suspended') AS suspended FROM users"
-    );
-    const [classCounts]=await db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_classes FROM classes");
-    const [examCounts]=await db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_exams FROM exams");
-    const settings=await getPlatformSettings();
+    const includeUsers=request.nextUrl.searchParams.get("includeUsers")==="1";
+    const [userRows,countsRows,classRows,examRows,settings]=await Promise.all([
+      includeUsers
+        ? db.execute<RowDataPacket[]>("SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 50")
+        : Promise.resolve([[] as RowDataPacket[], []] as any),
+      db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_users,SUM(role='student') AS students,SUM(role='teacher') AS teachers,SUM(role='admin') AS admins,SUM(status='suspended') AS suspended FROM users"),
+      db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_classes FROM classes"),
+      db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_exams FROM exams"),
+      getPlatformSettings()
+    ]);
+    const users=userRows[0];
+    const counts=countsRows[0];
+    const classCounts=classRows[0];
+    const examCounts=examRows[0];
     return NextResponse.json({users,stats:{...counts[0],...classCounts[0],...examCounts[0]},settings,currentAdminId:admin.id});
   }catch(error){
     console.error("Admin dashboard load failed:",error);
