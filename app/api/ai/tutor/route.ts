@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { createGroqTutorStream, reserveGeminiDailyRequest } from "@/lib/ai-provider";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -12,19 +13,15 @@ const bodySchema = z.object({
   conversationId: z.number().int().positive().optional()
 });
 
-type MessageRow = RowDataPacket & {
-  role: "user" | "assistant";
-  content: string;
-};
+type MessageRow = RowDataPacket & { role: "user" | "assistant"; content: string };
+const SYSTEM_PROMPT = "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student's language. Reply in the same language as the latest user message. Keep answers focused and avoid unnecessary repetition. Do not claim to have read files or sources that were not provided.";
 
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Write a message of up to 4,000 characters." }, { status: 400 });
-  }
+  if (!parsed.success) return NextResponse.json({ error: "Write a message of up to 4,000 characters." }, { status: 400 });
 
   const { message, conversationId } = parsed.data;
   let activeConversationId = conversationId;
@@ -44,59 +41,55 @@ export async function POST(request: NextRequest) {
       activeConversationId = created.insertId;
     }
 
-    await db.execute(
-      "INSERT INTO messages (conversation_id, role, content) VALUES (?, 'user', ?)",
-      [activeConversationId, message]
-    );
-
-    // A shorter recent history reduces prompt processing time while keeping context.
+    await db.execute("INSERT INTO messages (conversation_id, role, content) VALUES (?, 'user', ?)", [activeConversationId, message]);
     const [rows] = await db.execute<MessageRow[]>(
       "SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY created_at DESC, id DESC LIMIT 10",
       [activeConversationId]
     );
-
     const contents = rows.reverse().map((row) => ({
       role: row.role === "assistant" ? "model" as const : "user" as const,
       parts: [{ text: row.content }]
     }));
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "FOCUS AI is not configured yet. Please contact the platform administrator." }, { status: 503 });
-    }
-
-    const model = process.env.GEMINI_TUTOR_MODEL || "gemini-3.8-flash";
-    const upstream = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" +
-        encodeURIComponent(model) + ":streamGenerateContent?alt=sse",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student's language. Reply in the same language as the latest user message. Keep answers focused and avoid unnecessary repetition. Do not claim to have read files or sources that were not provided." }]
-          },
-          contents,
-          generationConfig: { temperature: 0.6, maxOutputTokens: 900 }
-        }),
-        cache: "no-store"
+    let provider: "gemini" | "groq" = "groq";
+    let upstream: Response;
+    if (process.env.GEMINI_API_KEY && await reserveGeminiDailyRequest()) {
+      const model = process.env.GEMINI_TUTOR_MODEL || process.env.GEMINI_MODEL || "gemini-3.8-flash";
+      const primary = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":streamGenerateContent?alt=sse",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents,
+            generationConfig: { temperature: 0.6, maxOutputTokens: 900 }
+          }),
+          cache: "no-store"
+        }
+      );
+      if (primary.ok && primary.body) {
+        provider = "gemini";
+        upstream = primary;
+      } else {
+        const errorData = await primary.json().catch(() => null);
+        const isQuota = primary.status === 429 || errorData?.error?.status === "RESOURCE_EXHAUSTED" ||
+          /quota|rate.?limit|resource exhausted/i.test(String(errorData?.error?.message || ""));
+        console.error("Primary tutor provider failed:", {
+          httpStatus: primary.status,
+          status: errorData?.error?.status || "unknown",
+          message: typeof errorData?.error?.message === "string" ? errorData.error.message.slice(0, 800) : "No error message returned"
+        });
+        if (!isQuota) return NextResponse.json({ error: "FOCUS AI could not start a reply. Please try again in a moment." }, { status: 502 });
+        upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
       }
-    );
-
-    if (!upstream.ok || !upstream.body) {
-      const errorData = await upstream.json().catch(() => null);
-      console.error("Gemini streaming request failed:", {
-        model,
-        httpStatus: upstream.status,
-        message: typeof errorData?.error?.message === "string" ? errorData.error.message.slice(0, 1000) : "No error message returned"
-      });
-      return NextResponse.json({ error: "FOCUS AI could not start a reply. Please try again in a moment." }, { status: 502 });
+    } else {
+      upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
     }
 
     const responseConversationId = activeConversationId;
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
-
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
         let buffer = "";
@@ -115,27 +108,26 @@ export async function POST(request: NextRequest) {
               if (!raw || raw === "[DONE]") continue;
               try {
                 const chunk = JSON.parse(raw);
-                const text = chunk?.candidates?.[0]?.content?.parts
-                  ?.map((part: { text?: string }) => part.text || "")
-                  .join("") || "";
+                const text = provider === "gemini"
+                  ? chunk?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("") || ""
+                  : chunk?.choices?.[0]?.delta?.content || "";
                 if (text) {
                   answer += text;
                   controller.enqueue(encoder.encode(text));
                 }
               } catch {
-                // Ignore incomplete or non-JSON SSE lines.
+                // Ignore non-JSON SSE lines.
               }
             }
           }
-
           if (buffer.startsWith("data:")) {
             const raw = buffer.slice(5).trim();
             if (raw && raw !== "[DONE]") {
               try {
                 const chunk = JSON.parse(raw);
-                const text = chunk?.candidates?.[0]?.content?.parts
-                  ?.map((part: { text?: string }) => part.text || "")
-                  .join("") || "";
+                const text = provider === "gemini"
+                  ? chunk?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("") || ""
+                  : chunk?.choices?.[0]?.delta?.content || "";
                 if (text) {
                   answer += text;
                   controller.enqueue(encoder.encode(text));
@@ -143,12 +135,8 @@ export async function POST(request: NextRequest) {
               } catch {}
             }
           }
-
           if (answer.trim()) {
-            await db.execute(
-              "INSERT INTO messages (conversation_id, role, content) VALUES (?, 'assistant', ?)",
-              [responseConversationId, answer.trim()]
-            );
+            await db.execute("INSERT INTO messages (conversation_id, role, content) VALUES (?, 'assistant', ?)", [responseConversationId, answer.trim()]);
           }
           controller.close();
         } catch (error) {
@@ -167,6 +155,10 @@ export async function POST(request: NextRequest) {
       }
     });
   } catch (error) {
+    const code = error instanceof Error ? error.message : "";
+    if (code === "GROQ_NOT_CONFIGURED") {
+      return NextResponse.json({ error: "FOCUS AI needs GROQ_API_KEY in Railway Variables when the primary daily limit is reached." }, { status: 503 });
+    }
     console.error("Tutor request failed:", error);
     return NextResponse.json({ error: "FOCUS AI could not generate a reply. Please try again in a moment." }, { status: 502 });
   }
