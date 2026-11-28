@@ -43,6 +43,9 @@ export async function generateGeminiText(
       status: data?.error?.status || "unknown",
       message: typeof data?.error?.message === "string" ? data.error.message.slice(0, 1000) : "No error message returned"
     });
+    if (response.status === 429 || data?.error?.status === "RESOURCE_EXHAUSTED" || /quota|rate.?limit|resource exhausted/i.test(String(data?.error?.message || ""))) {
+      throw new Error("GEMINI_QUOTA_EXCEEDED");
+    }
     throw new Error("GEMINI_REQUEST_FAILED");
   }
 
