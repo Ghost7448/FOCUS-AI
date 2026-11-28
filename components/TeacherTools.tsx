@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { BookOpen, Plus, Sparkles, Users, ClipboardList, ChartNoAxesCombined, LoaderCircle, Copy, WandSparkles } from "lucide-react";
 import { useLanguage } from "@/components/LanguageProvider";
+import CustomSelect from "@/components/CustomSelect";
 
 type ClassItem = { id: number; name: string; description: string | null; subject_name: string | null; student_count: number };
 type Subject = { id: number; name: string; description: string | null };
@@ -102,7 +103,7 @@ export default function TeacherTools({ tool }: { tool: string }) {
         <form onSubmit={createClass} className="card grid gap-3 p-5 md:grid-cols-2">
           <h3 className="md:col-span-2 flex items-center gap-2 font-bold"><Plus size={18}/>{t("Create a class")}</h3>
           <input className="field" placeholder={t("Class name")} value={className} onChange={e=>setClassName(e.target.value)} required/>
-          <select className="field" value={subjectId} onChange={e=>setSubjectId(e.target.value)}><option value="">{t("Select course (optional)")}</option>{subjects.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select>
+          <CustomSelect value={subjectId} onChange={setSubjectId} placeholder={t("Select course (optional)")} options={[{value:"",label:t("Select course (optional)")},...subjects.map(s=>({value:String(s.id),label:s.name}))]}/>
           <input className="field md:col-span-2" placeholder={t("Description (optional)")} value={classDescription} onChange={e=>setClassDescription(e.target.value)}/>
           <button disabled={busy} className="btn btn-primary md:col-span-2">{busy?t("Please wait..."):t("Create class")}</button>
         </form>
@@ -123,7 +124,7 @@ export default function TeacherTools({ tool }: { tool: string }) {
       {tool==="AI Lesson Planner" && <section className="space-y-4">
         <form onSubmit={generatePlan} className="card grid gap-3 p-5 md:grid-cols-2">
           <h3 className="md:col-span-2 flex items-center gap-2 font-bold"><WandSparkles size={18}/>{t("Generate a lesson plan")}</h3>
-          <select className="field md:col-span-2" value={selectedClass} onChange={e=>setSelectedClass(e.target.value)} required><option value="">{t("Choose class")}</option>{classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+          <CustomSelect className="md:col-span-2" value={selectedClass} onChange={setSelectedClass} placeholder={t("Choose class")} options={[{value:"",label:t("Choose class")},...classes.map(c=>({value:String(c.id),label:c.name}))]}/>
           <input className="field md:col-span-2" placeholder={t("Lesson topic")} value={topic} onChange={e=>setTopic(e.target.value)} required/>
           <input className="field" placeholder={t("Student level")} value={level} onChange={e=>setLevel(e.target.value)}/>
           <input className="field" type="number" min="10" max="240" value={duration} onChange={e=>setDuration(e.target.value)}/>
@@ -139,8 +140,8 @@ export default function TeacherTools({ tool }: { tool: string }) {
           <select className="field md:col-span-2" value={selectedClass} onChange={e=>setSelectedClass(e.target.value)} required><option value="">{t("Choose class")}</option>{classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
           <input className="field" placeholder={t("Exam title")} value={examTitle} onChange={e=>setExamTitle(e.target.value)} required/>
           <input className="field" placeholder={t("Exam topic")} value={topic} onChange={e=>setTopic(e.target.value)} required/>
-          <select className="field" value={questionCount} onChange={e=>setQuestionCount(e.target.value)}><option value="5">5 {t("questions")}</option><option value="10">10 {t("questions")}</option><option value="15">15 {t("questions")}</option><option value="20">20 {t("questions")}</option></select>
-          <select className="field" value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="easy">{t("Easy")}</option><option value="medium">{t("Medium")}</option><option value="hard">{t("Hard")}</option></select>
+          <CustomSelect value={questionCount} onChange={setQuestionCount} options={[5,10,15,20].map(n=>({value:String(n),label:n+" "+t("questions")}))}/>
+          <CustomSelect value={difficulty} onChange={setDifficulty} options={[{value:"easy",label:t("Easy")},{value:"medium",label:t("Medium")},{value:"hard",label:t("Hard")}]}/>
           <button disabled={busy||noClasses} className="btn btn-primary md:col-span-2">{busy?<LoaderCircle className="animate-spin"/>:<Sparkles size={17}/>} {t("Generate and save exam")}</button>
         </form>
         {generatedQuestions.length>0&&<div className="card space-y-4 p-5"><h3 className="font-bold">{t("Generated exam preview")}</h3>{generatedQuestions.map((q,i)=><div key={i}><b>{i+1}. {q.question}</b><ol className="mt-2 list-inside list-[upper-alpha] space-y-1 text-sm muted">{q.options.map((o,j)=><li key={j}>{o}</li>)}</ol></div>)}</div>}
