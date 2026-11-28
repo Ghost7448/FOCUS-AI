@@ -7,33 +7,81 @@ import { useLanguage } from "@/components/LanguageProvider";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 function renderInline(text: string): ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g).filter(Boolean);
+  const pattern = /(\*\*[\s\S]+?\*\*|__[^_]+__|~~[^~]+~~|(?<!\*)\*(?!\*)(?:\\.|[^*])+\*(?!\*)|(?<!_)_(?!_)(?:\\.|[^_])+_(?!_)|\x60[^\x60]+\x60|\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s<]+)/g;
+  const parts = text.split(pattern).filter(Boolean);
   return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) return <strong key={index} className="font-extrabold">{part.slice(2, -2)}</strong>;
-    if (part.startsWith("`") && part.endsWith("`")) return <code key={index} className="rounded-md px-1.5 py-0.5 font-mono text-[.92em]" style={{background:"var(--accent-soft)"}}>{part.slice(1,-1)}</code>;
-    const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    if ((part.startsWith("**") && part.endsWith("**")) || (part.startsWith("__") && part.endsWith("__"))) return <strong key={index} className="font-extrabold">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("~~") && part.endsWith("~~")) return <del key={index} className="opacity-70">{part.slice(2, -2)}</del>;
+    if ((part.startsWith("*") && part.endsWith("*") && !part.startsWith("**")) || (part.startsWith("_") && part.endsWith("_") && !part.startsWith("__"))) return <em key={index}>{part.slice(1, -1)}</em>;
+    if (part.charCodeAt(0) === 96 && part.charCodeAt(part.length - 1) === 96) return <code key={index} className="rounded-md px-1.5 py-0.5 font-mono text-[.92em]" style={{background:"var(--accent-soft)"}}>{part.slice(1,-1)}</code>;
+    const link = part.match(/^\[([^\]]+)\]\(https?:\/\/[^\s)]+\)$/);
     if (link) return <a key={index} href={link[2]} target="_blank" rel="noopener noreferrer" className="font-bold underline underline-offset-2" style={{color:"var(--accent-strong)"}}>{link[1]}</a>;
+    if (/^https?:\/\//.test(part)) return <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="underline break-all" style={{color:"var(--accent-strong)"}}>{part}</a>;
     return part;
   });
 }
 
 function FormattedMessage({ content }: { content: string }) {
   const lines = content.replace(/\r/g, "").split("\n");
-  return <div className="space-y-2 break-words">
-    {lines.map((line, index) => {
-      const heading = line.match(/^(#{1,3})\s+(.+)$/);
-      if (heading) {
-        const level = heading[1].length;
-        const Tag = level === 1 ? "h3" : level === 2 ? "h4" : "h5";
-        return <Tag key={index} className={level === 1 ? "text-xl font-extrabold leading-snug" : level === 2 ? "text-lg font-bold leading-snug" : "text-base font-bold leading-snug"}>{renderInline(heading[2])}</Tag>;
+  const blocks: ReactNode[] = [];
+  let index = 0;
+  while (index < lines.length) {
+    const line = lines[index];
+    if (!line.trim()) { blocks.push(<div key={index} className="h-1" />); index++; continue; }
+
+    if (line.includes("|") && index + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[index + 1])) {
+      const parseCells = (value: string) => value.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(cell => cell.trim());
+      const headers = parseCells(line);
+      const rows: string[][] = [];
+      index += 2;
+      while (index < lines.length && lines[index].includes("|")) { rows.push(parseCells(lines[index])); index++; }
+      blocks.push(<div key={blocks.length} className="overflow-x-auto rounded-xl border" style={{borderColor:"var(--border)"}}>
+        <table className="w-full border-collapse text-start text-sm">
+          <thead style={{background:"var(--accent-soft)"}}><tr>{headers.map((cell, i) => <th key={i} className="border-b px-3 py-2 text-start font-bold" style={{borderColor:"var(--border)"}}>{renderInline(cell)}</th>)}</tr></thead>
+          <tbody>{rows.map((row, ri) => <tr key={ri}>{headers.map((_, ci) => <td key={ci} className="border-b px-3 py-2" style={{borderColor:"var(--border)"}}>{renderInline(row[ci] || "")}</td>)}</tr>)}</tbody>
+        </table>
+      </div>);
+      continue;
+    }
+
+    const heading = line.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (heading) {
+      const level = heading[1].length;
+      const classes = ["text-2xl font-extrabold","text-xl font-extrabold","text-lg font-bold","text-base font-bold","text-sm font-bold","text-sm font-semibold"];
+      const Tag = ("h" + Math.min(level + 2, 6)) as keyof JSX.IntrinsicElements;
+      blocks.push(<Tag key={index} className={classes[level - 1] + " leading-snug"}>{renderInline(heading[2])}</Tag>);
+      index++; continue;
+    }
+    if (/^\s*(---+|\*\*\*+|___+)\s*$/.test(line)) { blocks.push(<hr key={index} className="my-2" style={{borderColor:"var(--border)"}} />); index++; continue; }
+
+    const quote = line.match(/^\s*>\s?(.*)$/);
+    if (quote) {
+      const quoteLines: string[] = [];
+      while (index < lines.length) { const match = lines[index].match(/^\s*>\s?(.*)$/); if (!match) break; quoteLines.push(match[1]); index++; }
+      blocks.push(<blockquote key={blocks.length} className="border-s-4 ps-3 italic opacity-90" style={{borderColor:"var(--accent-strong)"}}>{quoteLines.map((part, i) => <p key={i}>{renderInline(part)}</p>)}</blockquote>);
+      continue;
+    }
+
+    const listMatch = line.match(/^(\s*)([-+*]|\d+[.)])\s+(.+)$/);
+    if (listMatch) {
+      const ordered = /^\d/.test(listMatch[2]);
+      const indent = listMatch[1].length;
+      const items: { text: string; checked?: boolean }[] = [];
+      while (index < lines.length) {
+        const match = lines[index].match(/^(\s*)([-+*]|\d+[.)])\s+(.+)$/);
+        if (!match || match[1].length !== indent || /^\d/.test(match[2]) !== ordered) break;
+        const task = match[3].match(/^\[([ xX])\]\s+(.*)$/);
+        items.push(task ? {text:task[2],checked:task[1].toLowerCase()==="x"} : {text:match[3]});
+        index++;
       }
-      const bullet = line.match(/^\s*[-*]\s+(.+)$/);
-      const numbered = line.match(/^\s*\d+[.)]\s+(.+)$/);
-      if (bullet || numbered) return <div key={index} className="flex gap-2 ps-1"><span className="font-bold" style={{color:"var(--accent-strong)"}}>{bullet ? "•" : "›"}</span><span>{renderInline((bullet || numbered)![1])}</span></div>;
-      if (!line.trim()) return <div key={index} className="h-1" />;
-      return <p key={index}>{renderInline(line)}</p>;
-    })}
-  </div>;
+      const ListTag = ordered ? "ol" : "ul";
+      blocks.push(<ListTag key={blocks.length} className={ordered ? "list-decimal ps-6 space-y-1" : "list-disc ps-6 space-y-1"}>{items.map((item, i) => <li key={i}>{item.checked !== undefined ? <span className="inline-flex items-center gap-2"><span aria-hidden="true">{item.checked ? "☑" : "☐"}</span>{renderInline(item.text)}</span> : renderInline(item.text)}</li>)}</ListTag>);
+      continue;
+    }
+    blocks.push(<p key={index}>{renderInline(line)}</p>);
+    index++;
+  }
+  return <div className="space-y-2 break-words">{blocks}</div>;
 }
 
 export default function TutorChat() {
