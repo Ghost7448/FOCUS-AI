@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
-import { createGroqTutorStream, reserveGeminiDailyRequest } from "@/lib/ai-provider";
+import { createGroqTutorStream, markGeminiDailyQuotaExhausted, reserveGeminiDailyRequest } from "@/lib/ai-provider";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
           message: typeof errorData?.error?.message === "string" ? errorData.error.message.slice(0, 800) : "No error message returned"
         });
         if (!isQuota) return NextResponse.json({ error: "FOCUS AI could not start a reply. Please try again in a moment." }, { status: 502 });
+        await markGeminiDailyQuotaExhausted();
         upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
       }
     } else {
