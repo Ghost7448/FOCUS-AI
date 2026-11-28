@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
-import { generateGeminiText } from "@/lib/gemini";
+import { generateFocusText } from "@/lib/ai-provider";
 import { hasSameOrigin } from "@/lib/security";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -101,12 +101,12 @@ export async function POST(request: NextRequest) {
       const prompt = input.language === "ar"
         ? `أنشئ خطة درس عملية باللغة العربية عن: ${input.topic}. المستوى: ${input.level || "عام"}. المدة: ${input.duration} دقيقة. أخرج أهداف التعلم، المتطلبات السابقة، تقسيم الوقت، شرح الأنشطة، أسئلة التقييم والواجب. استخدم عناوين واضحة.`
         : `Create a practical lesson plan in English about: ${input.topic}. Level: ${input.level || "general"}. Duration: ${input.duration} minutes. Include learning objectives, prerequisites, timed teaching activities, assessment questions, and homework with clear headings.`;
-      const plan = await generateGeminiText([{ role: "user", parts: [{ text: prompt }] }], "You are an experienced instructional designer. Produce accurate, classroom-ready lesson plans.", 2200);
+      const plan = await generateFocusText([{ role: "user", parts: [{ text: prompt }] }], "You are an experienced instructional designer. Produce accurate, classroom-ready lesson plans.", 2200);
       return NextResponse.json({ plan });
     }
     if (input.action === "create_exam") {
       const prompt = `Create exactly ${input.count} ${input.difficulty} multiple-choice questions about "${input.topic}". Language: ${input.language === "ar" ? "Arabic" : "English"}. Return ONLY valid JSON array. Each item: {"question":"...","options":["A","B","C","D"],"answer":0,"explanation":"..."}. answer is zero-based index.`;
-      const raw = await generateGeminiText([{ role: "user", parts: [{ text: prompt }] }], "You create fair educational assessments. Return valid JSON only, no markdown.", 3000);
+      const raw = await generateFocusText([{ role: "user", parts: [{ text: prompt }] }], "You create fair educational assessments. Return valid JSON only, no markdown.", 3000);
       const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
       let questions: any[];
       try { questions = JSON.parse(cleaned); }
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ error: "Unsupported action." }, { status: 400 });
   } catch (error) {
-    if (error instanceof Error && error.message === "GEMINI_NOT_CONFIGURED") return NextResponse.json({ error: "Gemini is not configured. Add GEMINI_API_KEY in Railway Variables." }, { status: 503 });
+    if (error instanceof Error && error.message === "GROQ_NOT_CONFIGURED") return NextResponse.json({ error: "FOCUS AI needs GROQ_API_KEY in Railway Variables because the primary AI service is unavailable." }, { status: 503 });
     console.error("Teacher action failed:", error);
     return NextResponse.json({ error: "Could not complete this action. Please check the database and AI configuration." }, { status: 500 });
   }
