@@ -738,3 +738,33 @@ input[type="date"]:disabled { opacity: .5; cursor: not-allowed; }
   }
   .focus-calendar-day{font-size:15px}
 }
+
+/* Calendar panel width: keep the full week grid comfortably visible. */
+.focus-date-popover{
+  box-sizing:border-box;
+  width:min(560px,calc(100vw - 32px));
+  max-width:calc(100vw - 32px);
+  left:50%;
+  right:auto;
+  transform:translateX(-50%);
+}
+@media(max-width:520px){
+  .focus-date-popover{
+    left:8px;
+    right:8px;
+    width:auto;
+    max-width:none;
+    transform:translateY(-50%)!important;
+    padding:17px 14px;
+  }
+  .focus-calendar-week,
+  .focus-calendar-days{
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:5px;
+  }
+  .focus-calendar-day,
+  .focus-calendar-blank{
+    width:100%;
+    min-width:0;
+  }
+}
