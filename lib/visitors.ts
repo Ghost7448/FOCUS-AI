@@ -1,7 +1,10 @@
 import { db } from "@/lib/mysql";
 
+let visitorTableReady: Promise<void> | null = null;
+
 export async function ensureVisitorTable() {
-  await db.execute(`
+  if (visitorTableReady) return visitorTableReady;
+  visitorTableReady = db.execute(`
     CREATE TABLE IF NOT EXISTS visitor_sessions (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       session_key CHAR(64) NOT NULL UNIQUE,
@@ -28,5 +31,9 @@ export async function ensureVisitorTable() {
       INDEX visitor_last_seen_idx(last_seen),
       INDEX visitor_user_idx(user_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-  `);
+  `).then(() => undefined).catch(error => {
+    visitorTableReady = null;
+    throw error;
+  });
+  return visitorTableReady;
 }
