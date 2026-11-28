@@ -64,7 +64,9 @@ export async function POST(request: NextRequest) {
 
     const answer = await generateGeminiText(
       contents,
-      "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student's language. Reply in the same language as the latest user message. Do not claim to have read files or sources that were not provided."
+      "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student's language. Reply in the same language as the latest user message. Do not claim to have read files or sources that were not provided.",
+      1800,
+      process.env.GEMINI_TUTOR_MODEL || "gemini-2.5-flash"
     );
 
     await db.execute(
@@ -76,9 +78,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
     if (code === "GEMINI_NOT_CONFIGURED") {
-      return NextResponse.json({ error: "Gemini is not configured yet. Add GEMINI_API_KEY to the server environment." }, { status: 503 });
+      return NextResponse.json({ error: "FOCUS AI is not configured yet. Please contact the platform administrator." }, { status: 503 });
     }
     console.error("Tutor request failed:", error);
-    return NextResponse.json({ error: "The tutor could not answer right now. Please try again." }, { status: 502 });
+    return NextResponse.json({ error: "FOCUS AI could not generate a reply. Please try again in a moment." }, { status: 502 });
   }
 }
