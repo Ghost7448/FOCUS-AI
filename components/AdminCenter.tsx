@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Settings, Users, Eye, RefreshCw, Search, CalendarDays } from "lucide-react";
 import AdminTools from "@/components/AdminTools";
+import CustomSelect from "@/components/CustomSelect";
+import DatePicker from "@/components/DatePicker";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type Section = "Platform Settings" | "User Management" | "Logs" | "Visitors";
@@ -88,9 +90,9 @@ export default function AdminCenter() {
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-lg font-extrabold">{t("Activity Logs")}</h3><p className="text-sm muted">{t("Site activity, account security, admin changes and page visits.")}</p></div><button type="button" onClick={()=>void loadLogs()} className="workspace-back"><RefreshCw size={16}/>{t("Refresh")}</button></div>
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         <label className="relative"><Search className="absolute left-3 top-3.5 muted" size={16}/><input className="field w-full pl-9" value={search} onChange={e=>setSearch(e.target.value)} placeholder={t("Search logs...")}/></label>
-        <select className="field" value={category} onChange={e=>setCategory(e.target.value)}><option value="all">{t("All categories")}</option><option value="auth">{t("Authentication")}</option><option value="users">{t("Users")}</option><option value="platform">{t("Platform")}</option><option value="learning">{t("Learning")}</option><option value="content">{t("Content")}</option><option value="navigation">{t("Page visits")}</option></select>
-        <label className="flex items-center gap-2"><CalendarDays size={16}/><input aria-label="From date" className="field min-w-0 w-full" type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label>
-        <label className="flex items-center gap-2"><CalendarDays size={16}/><input aria-label="To date" className="field min-w-0 w-full" type="date" value={to} onChange={e=>setTo(e.target.value)}/></label>
+        <CustomSelect className="w-full" value={category} onChange={setCategory} options={[{value:"all",label:t("All categories")},{value:"auth",label:t("Authentication")},{value:"users",label:t("Users")},{value:"platform",label:t("Platform")},{value:"learning",label:t("Learning")},{value:"content",label:t("Content")},{value:"navigation",label:t("Page visits")}]}/>
+        <DatePicker ariaLabel="From date" className="min-w-0 w-full" value={from} onChange={setFrom} locale={language}/>
+        <DatePicker ariaLabel="To date" className="min-w-0 w-full" value={to} onChange={setTo} locale={language}/>
       </div>
       <div className="flex justify-end"><button type="button" onClick={()=>void loadLogs()} className="btn btn-primary">{t("Apply filters")}</button></div>
       {error&&<p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
@@ -110,7 +112,7 @@ export default function AdminCenter() {
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {[[t("Sessions"),visitorStats.total_sessions],[t("Unique IPs"),visitorStats.unique_ips],[t("Active in 5 min"),visitorStats.active_now],[t("Guests"),visitorStats.guests]].map(([label,value])=><article key={String(label)} className="rounded-xl border border-black/10 p-4 dark:border-white/10"><p className="text-xs muted">{label}</p><p className="mt-2 text-2xl font-extrabold">{Number(value||0).toLocaleString()}</p></article>)}
       </div>
-      <div className="grid gap-2 sm:grid-cols-2"><label className="relative"><Search className="absolute left-3 top-3.5 muted" size={16}/><input className="field w-full pl-9" value={search} onChange={e=>setSearch(e.target.value)} placeholder={t("Search visitors...")}/></label><select className="field" value={device} onChange={e=>setDevice(e.target.value)}><option value="all">{t("All devices")}</option><option value="Mobile">{t("Mobile")}</option><option value="Desktop">{t("Desktop")}</option><option value="Tablet">{t("Tablet")}</option></select></div>
+      <div className="grid gap-2 sm:grid-cols-2"><label className="relative"><Search className="absolute left-3 top-3.5 muted" size={16}/><input className="field w-full pl-9" value={search} onChange={e=>setSearch(e.target.value)} placeholder={t("Search visitors...")}/></label><CustomSelect value={device} onChange={setDevice} options={[{value:"all",label:t("All devices")},{value:"Mobile",label:t("Mobile")},{value:"Desktop",label:t("Desktop")},{value:"Tablet",label:t("Tablet")}]}/></div>
       {error&&<p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {loading?<p className="muted">{t("Loading...")}</p>:<div className="space-y-3">
         {filteredVisitors.map(v=><article key={v.id} className="rounded-2xl border border-black/10 p-4 dark:border-white/10">
