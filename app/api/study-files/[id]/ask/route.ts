@@ -41,7 +41,7 @@ export async function POST(
     try { originalBytes = restoreStudyFile(file.file_data, file.compression_method); }
     catch { return NextResponse.json({ error: "This stored file could not be decompressed." }, { status: 415 }); }
     if (originalBytes.length > 14 * 1024 * 1024) {
-      return NextResponse.json({ error: "Uploads can be 30 MB, but Gemini questions currently support files up to 14 MB." }, { status: 413 });
+      return NextResponse.json({ error: "Uploads can be 30 MB, but FOCUS AI file questions currently support files up to 14 MB." }, { status: 413 });
     }
     const isAudio = file.mime_type.startsWith("audio/");
     const geminiMimeType = file.mime_type === "audio/x-m4a" ? "audio/mp4" : file.mime_type === "audio/x-wav" ? "audio/wav" : file.mime_type === "audio/mp3" ? "audio/mpeg" : file.mime_type;
@@ -63,7 +63,7 @@ export async function POST(
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
     if (code === "GEMINI_NOT_CONFIGURED") {
-      return NextResponse.json({ error: "Gemini is not configured. Add GEMINI_API_KEY to Railway Variables." }, { status: 503 });
+      return NextResponse.json({ error: "FOCUS AI file analysis is not configured. Please contact the platform administrator." }, { status: 503 });
     }
     console.error("Study file question failed:", error);
     return NextResponse.json({ error: "Could not answer this question right now." }, { status: 502 });
