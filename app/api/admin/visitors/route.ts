@@ -18,7 +18,7 @@ export async function GET() {
               v.hardware_concurrency,v.device_memory,v.touch_points,v.last_path,v.page_views,
               v.first_seen,v.last_seen,u.full_name account_name,u.email account_email
          FROM visitor_sessions v LEFT JOIN users u ON u.id=v.user_id
-        ORDER BY v.last_seen DESC LIMIT 1000`
+        ORDER BY v.last_seen DESC LIMIT 100`
     );
     const [stats] = await db.execute<RowDataPacket[]>(
       "SELECT COUNT(*) total_sessions,COUNT(DISTINCT ip_address) unique_ips,SUM(last_seen>=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 5 MINUTE)) active_now,SUM(user_id IS NULL) guests FROM visitor_sessions"
