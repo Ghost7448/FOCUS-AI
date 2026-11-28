@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { generateFocusText } from "@/lib/ai-provider";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -146,6 +147,7 @@ export async function POST(request: NextRequest) {
       connection.release();
     }
 
+    await writeAuditLog({ actorUserId:user.id, action:"quiz_generated", entityType:"quiz", entityId:quizId, metadata:{ title, questionCount:createdQuestions.length } });
     return NextResponse.json({
       quiz: {
         id: quizId,
