@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/mysql";
 import { hashToken } from "@/lib/auth";
 import { hasSameOrigin } from "@/lib/security";
+import { writeAuditLog, requestIp } from "@/lib/audit";
 export const runtime="nodejs";
 export async function POST(request:NextRequest){
  try{
@@ -22,6 +23,7 @@ export async function POST(request:NextRequest){
    await connection.execute("DELETE FROM password_reset_tokens WHERE user_id=?",[record.user_id]);
    await connection.commit();
   }catch(error){await connection.rollback();throw error;}finally{connection.release();}
+  await writeAuditLog({ actorUserId:record.user_id, action:"password_reset_completed", entityType:"user", entityId:record.user_id, ipAddress:requestIp(request.headers) });
   return NextResponse.json({message:"Password updated. You can now log in."});
  }catch(error){console.error("Password reset error:",error);return NextResponse.json({error:"Unable to reset password right now."},{status:500});}
 }
