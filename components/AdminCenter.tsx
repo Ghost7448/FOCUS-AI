@@ -77,7 +77,7 @@ export default function AdminCenter() {
     return matchesText && matchesDevice;
   }),[visitors,search,device]);
 
-  return <div className="mt-7 space-y-5" dir={language==="ar"?"rtl":"ltr"}>
+  return <div className="admin-center-root mt-7 space-y-5" dir={language==="ar"?"rtl":"ltr"}>
     <section className="card p-3 sm:p-4">
       <div className="flex flex-wrap gap-2">
         {tabs.map(tab=>{const Icon=tab.icon;return <button key={tab.label} type="button" onClick={()=>{setSection(tab.label);setError("");}} className={`rounded-xl px-4 py-3 text-sm font-bold transition ${section===tab.label?"border border-transparent text-white shadow-lg":"border border-black/10 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"}`} style={section===tab.label?{background:"linear-gradient(135deg,var(--accent),var(--accent-strong))"}:undefined}><span className="inline-flex items-center gap-2"><Icon size={17}/>{t(tab.label)}</span></button>;})}
