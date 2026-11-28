@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { hasSameOrigin } from "@/lib/security";
 import type { RowDataPacket } from "mysql2";
 
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
       const [rows] = await db.execute<RowDataPacket[]>("SELECT id FROM classes WHERE join_code_hash=? AND is_active=1 LIMIT 1", [hash]);
       if (!rows.length) return NextResponse.json({ error: "Invalid class code." }, { status: 404 });
       await db.execute("INSERT IGNORE INTO class_members(class_id,student_id) VALUES(?,?)", [rows[0].id,user.id]);
+      await writeAuditLog({ actorUserId:user.id, action:"class_joined", entityType:"class", entityId:Number(rows[0].id) });
       return NextResponse.json({ message: "You joined the class successfully." });
     }
 
@@ -92,6 +94,7 @@ export async function POST(request: NextRequest) {
          ON DUPLICATE KEY UPDATE answer_text=VALUES(answer_text),awarded_points=VALUES(awarded_points)`,
         [submissionId,questionId,String(answer),awarded]);
     }
+    await writeAuditLog({ actorUserId:user.id, action:"exam_submitted", entityType:"exam", entityId:parsed.data.examId, metadata:{ score, total, submissionId } });
     return NextResponse.json({ message: "Exam submitted.", score, total });
   } catch (error) {
     console.error("Student action failed:", error);
