@@ -102,11 +102,23 @@ export default function TalkWithFocusAI() {
       });
       if (answer.trim() && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(answer);
+        // Use the device's built-in speech voices; prefer Egyptian Arabic when available.
+        const spokenText = answer
+          .replace(/https?:\\/\\/\\S+/g, " ")
+          .replace(/[*_#`~>|]/g, " ")
+          .replace(/\\s+/g, " ")
+          .trim();
+        const utterance = new SpeechSynthesisUtterance(spokenText);
         utterance.lang = "ar-EG";
         const arabicVoices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith("ar"));
-        utterance.voice = arabicVoices.find((voice) => voice.lang.toLowerCase() === "ar-eg") || arabicVoices[0] || null;
-        utterance.rate = 1.02;
+        utterance.voice =
+          arabicVoices.find((voice) => voice.lang.toLowerCase() === "ar-eg") ||
+          arabicVoices.find((voice) => /egypt|مصر|egy/i.test(voice.name)) ||
+          arabicVoices[0] ||
+          null;
+        utterance.rate = 0.94;
+        utterance.pitch = 1.04;
+        utterance.volume = 1;
         utterance.onstart = () => setSpeaking(true);
         utterance.onend = () => {
           setSpeaking(false);
