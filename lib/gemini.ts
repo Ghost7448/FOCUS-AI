@@ -7,12 +7,13 @@ type GeminiContent = {
 export async function generateGeminiText(
   contents: GeminiContent[],
   systemInstruction: string,
-  maxOutputTokens = 1400
+  maxOutputTokens = 1400,
+  modelOverride?: string
 ) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_NOT_CONFIGURED");
 
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const model = modelOverride || process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const response = await fetch(
     "https://generativelanguage.googleapis.com/v1beta/models/" +
       encodeURIComponent(model) + ":generateContent",
@@ -36,7 +37,12 @@ export async function generateGeminiText(
 
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    console.error("Gemini API request failed:", response.status, data?.error?.status || "unknown");
+    console.error("Gemini API request failed:", {
+      model,
+      httpStatus: response.status,
+      status: data?.error?.status || "unknown",
+      message: typeof data?.error?.message === "string" ? data.error.message.slice(0, 1000) : "No error message returned"
+    });
     throw new Error("GEMINI_REQUEST_FAILED");
   }
 
