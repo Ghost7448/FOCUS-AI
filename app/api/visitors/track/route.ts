@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
-import { writeAuditLog, requestIp } from "@/lib/audit";
+import { requestIp } from "@/lib/audit";
 import { ensureVisitorTable } from "@/lib/visitors";
 
 export const runtime = "nodejs";
@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
        Number.isFinite(touch)&&touch>=0?Math.min(touch,1024):null,path]
     );
 
-    await writeAuditLog({ actorUserId:user?.id || null, action:"page_view", entityType:"page", metadata:{path}, ipAddress:ip });
 
     const response = NextResponse.json({ ok:true });
     response.cookies.set("focus_visitor",token,{
