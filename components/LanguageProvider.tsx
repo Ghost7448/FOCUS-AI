@@ -308,6 +308,8 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Unknown": { en: "Unknown", ar: "غير معروف" },
   "Unknown browser": { en: "Unknown browser", ar: "متصفح غير معروف" },
   "Unknown OS": { en: "Unknown OS", ar: "نظام تشغيل غير معروف" },
+  "IP Address": { en: "IP Address", ar: "عنوان IP" },
+  "Operating system": { en: "Operating system", ar: "نظام التشغيل" },
   "Account email": { en: "Account email", ar: "بريد الحساب" },
   "User-Agent": { en: "User-Agent", ar: "بيانات المتصفح" },
   "Device": { en: "Device", ar: "الجهاز" },
