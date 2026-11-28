@@ -42,7 +42,7 @@ export default function AdminCenter() {
   async function loadLogs() {
     setLoading(true); setError("");
     try {
-      const params = new URLSearchParams({q:search,category,limit:"1000"});
+      const params = new URLSearchParams({q:search,category,limit:"100"});
       if(from) params.set("from",from);
       if(to) params.set("to",to);
       const response = await fetch("/api/admin/logs?"+params.toString(),{cache:"no-store"});
@@ -97,7 +97,7 @@ export default function AdminCenter() {
       <div className="flex justify-end"><button type="button" onClick={()=>void loadLogs()} className="btn btn-primary">{t("Apply filters")}</button></div>
       {error&&<p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {loading?<p className="muted">{t("Loading...")}</p>:<div className="space-y-3">
-        <p className="text-xs muted">{logs.length.toLocaleString()} {t("events loaded (up to 1,000)")}</p>
+        <p className="text-xs muted">{logs.length.toLocaleString()} {t("events loaded (up to 100)")}</p>
         {logs.map(log=><details key={log.id} className="rounded-xl border border-black/10 p-4 dark:border-white/10">
           <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3"><span><b className="block text-sm">{log.action.replace(/_/g," ")}</b><span className="text-xs muted">{log.actor_name||log.actor_email||t("Guest")} · {log.entity_type||t("Event")}{log.entity_id? " #"+log.entity_id:""}</span></span><span className="text-xs muted">{displayDate(log.created_at)}</span></summary>
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2"><p><b>{t("IP Address")}:</b> {log.ip_address||"—"}</p><p><b>{t("Actor ID")}:</b> {log.actor_user_id||"Guest"}</p><p><b>{t("Entity")}:</b> {log.entity_type||"—"} {log.entity_id||""}</p></div>
@@ -117,7 +117,7 @@ export default function AdminCenter() {
       {loading?<p className="muted">{t("Loading...")}</p>:<div className="space-y-3">
         {filteredVisitors.map(v=><article key={v.id} className="rounded-2xl border border-black/10 p-4 dark:border-white/10">
           <div className="flex flex-wrap items-start justify-between gap-3"><div><span className="text-[11px] font-bold uppercase tracking-wider muted">VISITOR #{v.id}</span><h4 className="mt-1 font-extrabold">{v.account_name||t("Guest visitor")}</h4><p className="text-xs muted">{v.device_type||"Unknown"} · {v.browser||"Unknown browser"} · {v.operating_system||"Unknown OS"}</p></div><span className="rounded-full bg-black/5 px-3 py-1 text-xs dark:bg-white/10">{displayDate(v.last_seen)}</span></div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <details className="mt-4 rounded-xl border border-black/10 p-3 dark:border-white/10"><summary className="cursor-pointer text-sm font-bold">{t("View technical details")}</summary><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[
               [t("IP Address"),v.ip_address],[t("Account email"),v.account_email],[t("User-Agent"),v.user_agent],
               [t("Operating system"),v.operating_system],[t("Device"),v.device_type],[t("Device information"),v.device_info],
@@ -127,7 +127,7 @@ export default function AdminCenter() {
               [t("Touch points"),v.touch_points],[t("Last page"),v.last_path],[t("Page views"),v.page_views],
               [t("First visit"),displayDate(v.first_seen)],[t("Last seen"),displayDate(v.last_seen)]
             ].map(([label,value],i)=><div key={i} className="min-w-0"><p className="text-[11px] muted">{label}</p><p className="mt-1 break-all text-sm font-semibold">{value===null||value===undefined||value===""?"—":String(value)}</p></div>)}
-          </div>
+          </div></div></details>
         </article>)}
         {!filteredVisitors.length&&<p className="muted">{t("No visitor sessions match these filters.")}</p>}
       </div>}
