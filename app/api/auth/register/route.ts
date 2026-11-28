@@ -8,6 +8,7 @@ import { sendSecurityEmail } from "@/lib/email";
 import { hasSameOrigin } from "@/lib/security";
 import { getPlatformSettings } from "@/lib/platform-settings";
 import { getAppOrigin } from "@/lib/app-url";
+import { writeAuditLog } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
       [input.email,passwordHash,input.fullName,input.role,input.preferredLanguage,input.educationLevel||null,input.grade||null,input.teachingSubject||null,input.institution||null,verificationRequired?0:1]
     );
     const userId = Number((result as {insertId:number}).insertId);
+    await writeAuditLog({ actorUserId:userId, action:"account_registered", entityType:"user", entityId:userId, metadata:{ role:input.role, verificationRequired }, ipAddress:ip });
     await db.execute("INSERT INTO auth_attempts(email,ip_address) VALUES(?,?)", [input.email,ip]);
     if (verificationRequired) {
       const token = randomBytes(32).toString("base64url");
