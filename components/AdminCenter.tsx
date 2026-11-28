@@ -127,7 +127,7 @@ export default function AdminCenter() {
               [t("Touch points"),v.touch_points],[t("Last page"),v.last_path],[t("Page views"),v.page_views],
               [t("First visit"),displayDate(v.first_seen)],[t("Last seen"),displayDate(v.last_seen)]
             ].map(([label,value],i)=><div key={i} className="min-w-0"><p className="text-[11px] muted">{label}</p><p className="mt-1 break-all text-sm font-semibold">{value===null||value===undefined||value===""?"—":String(value)}</p></div>)}
-          </div></div></details>
+          </div></details>
         </article>)}
         {!filteredVisitors.length&&<p className="muted">{t("No visitor sessions match these filters.")}</p>}
       </div>}
