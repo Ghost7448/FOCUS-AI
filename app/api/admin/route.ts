@@ -22,7 +22,7 @@ export async function GET(request:NextRequest){
     const includeUsers=request.nextUrl.searchParams.get("includeUsers")==="1";
     const [userRows,countsRows,classRows,examRows,settings]=await Promise.all([
       includeUsers
-        ? db.execute<RowDataPacket[]>("SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 50")
+        ? db.execute<RowDataPacket[]>("SELECT id,email,full_name,role,status,email_verified,created_at FROM users ORDER BY created_at DESC LIMIT 25")
         : Promise.resolve([[] as RowDataPacket[], []] as any),
       db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_users,SUM(role='student') AS students,SUM(role='teacher') AS teachers,SUM(role='admin') AS admins,SUM(status='suspended') AS suspended FROM users"),
       db.execute<RowDataPacket[]>("SELECT COUNT(*) AS total_classes FROM classes"),
