@@ -40,7 +40,7 @@ export async function POST(
     try { originalBytes = restoreStudyFile(file.file_data, file.compression_method); }
     catch { return NextResponse.json({ error: "This stored file could not be decompressed." }, { status: 415 }); }
     if (originalBytes.length > 14 * 1024 * 1024) {
-      return NextResponse.json({ error: "Gemini inline audio/PDF analysis currently supports files up to 14 MB. Please upload a smaller file." }, { status: 413 });
+      return NextResponse.json({ error: "FOCUS AI file analysis currently supports files up to 14 MB. Please upload a smaller file." }, { status: 413 });
     }
 
     const isPdf = file.mime_type === "application/pdf";
@@ -78,10 +78,10 @@ export async function POST(
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
     if (code === "GEMINI_NOT_CONFIGURED") {
-      return NextResponse.json({ error: "Gemini is not configured. Add GEMINI_API_KEY to Railway Variables." }, { status: 503 });
+      return NextResponse.json({ error: "FOCUS AI file analysis is not configured. Please contact the platform administrator." }, { status: 503 });
     }
     if (code === "GEMINI_REQUEST_FAILED") {
-      return NextResponse.json({ error: "Gemini could not process this file. Check the model setting and try a smaller or clearer file." }, { status: 502 });
+      return NextResponse.json({ error: "FOCUS AI could not process this file. Check the model setting and try a smaller or clearer file." }, { status: 502 });
     }
     console.error("Study file analysis failed:", error);
     return NextResponse.json({ error: "Analysis failed. Please try again." }, { status: 502 });
