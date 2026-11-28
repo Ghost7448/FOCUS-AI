@@ -6,6 +6,7 @@ import { hashToken } from "@/lib/auth";
 import { sendSecurityEmail } from "@/lib/email";
 import { hasSameOrigin } from "@/lib/security";
 import { getAppOrigin } from "@/lib/app-url";
+import { writeAuditLog } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
     );
     const user = (rows as { id: number }[])[0];
     if (user) {
+      await writeAuditLog({ actorUserId:user.id, action:"verification_email_resent", entityType:"user", entityId:user.id, ipAddress:ip });
       await db.execute("DELETE FROM email_verification_tokens WHERE user_id = ?", [user.id]);
       const token = randomBytes(32).toString("base64url");
       await db.execute(
