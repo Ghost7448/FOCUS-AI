@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
   const category = params.get("category") || "all";
   const from = params.get("from");
   const to = params.get("to");
-  const requestedLimit = Number(params.get("limit") || 50);
-  const limit = Number.isInteger(requestedLimit) ? Math.min(50, Math.max(10, requestedLimit)) : 50;
+  const requestedLimit = Number(params.get("limit") || 20);
+  const limit = Number.isInteger(requestedLimit) ? Math.min(20, Math.max(5, requestedLimit)) : 20;
   const conditions: string[] = ["l.action <> 'page_view'"];
   const values: string[] = [];
 
