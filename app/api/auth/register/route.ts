@@ -7,6 +7,7 @@ import { hashToken } from "@/lib/auth";
 import { sendSecurityEmail } from "@/lib/email";
 import { hasSameOrigin } from "@/lib/security";
 import { getPlatformSettings } from "@/lib/platform-settings";
+import { getAppOrigin } from "@/lib/app-url";
 
 export const runtime = "nodejs";
 
@@ -38,14 +39,7 @@ export async function POST(request: NextRequest) {
     if (verificationRequired) {
       const token = randomBytes(32).toString("base64url");
       await db.execute("INSERT INTO email_verification_tokens(user_id,token_hash,expires_at) VALUES(?,?,DATE_ADD(UTC_TIMESTAMP(),INTERVAL 24 HOUR))", [userId,hashToken(token)]);
-      const configuredAppUrl = (process.env.APP_URL || "").trim();
-      const configuredIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(configuredAppUrl);
-      const fallbackOrigin = process.env.NODE_ENV === "production"
-        ? "https://focus-ai-production-a7fd3f59.up.railway.app"
-        : request.nextUrl.origin;
-      const appOrigin = configuredAppUrl && !configuredIsLocal
-        ? configuredAppUrl.replace(/\/+$/, "")
-        : fallbackOrigin;
+      const appOrigin = getAppOrigin(request.nextUrl.origin);
       const url = `${appOrigin}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
       try {
         await sendSecurityEmail(input.email,"Verify your FOCUS AI account",
