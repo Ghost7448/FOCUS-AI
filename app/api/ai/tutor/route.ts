@@ -11,11 +11,13 @@ export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   message: z.string().trim().min(1).max(4000),
-  conversationId: z.number().int().positive().optional()
+  conversationId: z.number().int().positive().optional(),
+  voiceMode: z.boolean().optional()
 });
 
 type MessageRow = RowDataPacket & { role: "user" | "assistant"; content: string };
-const SYSTEM_PROMPT = "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student's language. Reply in the same language as the latest user message. Keep answers focused and avoid unnecessary repetition. Do not claim to have read files or sources that were not provided.";
+const SYSTEM_PROMPT = "You are FOCUS AI Personal Tutor. Help the student learn step by step, explain concepts clearly, ask helpful follow-up questions when useful, and adapt to the student language. Reply in the same language as the latest user message. Keep answers focused and avoid unnecessary repetition. Do not claim to have read files or sources that were not provided.";
+const VOICE_SYSTEM_PROMPT = "VOICE CONVERSATION STYLE: Speak like a natural, friendly Egyptian person having a real conversation, not like a translator, textbook, customer-service script, or formal news presenter. Use everyday Egyptian Arabic (عامية مصرية) when the user speaks Arabic. The user may naturally mix Arabic and English in the same sentence; understand code-switching, keep technical, product, and programming terms in English when natural, and do not awkwardly translate every English word. Match the user mix of languages and terminology. Avoid Modern Standard Arabic and stiff phrases. Use short, flowing sentences. Be warm but not overexcited. Answer the actual point first, ask one simple follow-up only when needed. If the user speaks mostly English, reply in natural English. Never force Arabic if the user clearly prefers English.";
 
 export async function POST(request: NextRequest) {
   const user = await getCurrentUser();
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Write a message of up to 4,000 characters." }, { status: 400 });
 
-  const { message, conversationId } = parsed.data;
+  const { message, conversationId, voiceMode } = parsed.data;
   let activeConversationId = conversationId;
 
   try {
@@ -58,7 +60,7 @@ export async function POST(request: NextRequest) {
     // Groq is the default provider for Personal Tutor. If its quota/rate limit
     // is reached (or its key is missing), fall back to Gemini.
     try {
-      upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
+      upstream = await createGroqTutorStream(contents, voiceMode ? VOICE_SYSTEM_PROMPT : SYSTEM_PROMPT, 900);
     } catch (groqError) {
       const groqCode = groqError instanceof Error ? groqError.message : "";
       const canFallback = groqCode === "GROQ_RATE_LIMITED" || groqCode === "GROQ_NOT_CONFIGURED";
@@ -74,7 +76,7 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            systemInstruction: { parts: [{ text: voiceMode ? VOICE_SYSTEM_PROMPT : SYSTEM_PROMPT }] },
             contents,
             generationConfig: { temperature: 0.6, maxOutputTokens: 900 }
           }),
