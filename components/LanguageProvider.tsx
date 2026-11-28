@@ -69,7 +69,7 @@ const translations: Record<string, { en: string; ar: string }> = {
   "AI learning assistant": { en: "AI learning assistant", ar: "مساعد التعلم الذكي" },
   "Ask your tutor anything...": { en: "Ask your tutor anything...", ar: "اسأل المدرس الذكي عن أي حاجة..." },
   "Send": { en: "Send", ar: "إرسال" },
-  "Gemini is thinking...": { en: "FOCUS AI is thinking...", ar: "FOCUS AI بيفكر..." },
+  "FOCUS AI is thinking...": { en: "FOCUS AI is thinking...", ar: "FOCUS AI بيفكر..." },
   "What are you learning today?": { en: "What are you learning today?", ar: "هتتعلم إيه النهارده؟" },
   "Ask for an explanation, an example, or a step-by-step walkthrough.": { en: "Ask for an explanation, an example, or a step-by-step walkthrough.", ar: "اطلب شرح أو مثال أو توضيح خطوة بخطوة." },
   "Your conversation is saved to your FOCUS AI account.": { en: "Your conversation is saved to your FOCUS AI account.", ar: "محادثتك بتتحفظ في حسابك على FOCUS AI." },
