@@ -15,6 +15,8 @@ const translations: Record<string, { en: string; ar: string }> = {
   "Your learning workspace.": { en: "Your learning workspace.", ar: "مساحة تعلمك المتكاملة." },
   "Choose a tool below to open its workspace and see its current availability.": { en: "Choose a tool below to open its workspace and see its current availability.", ar: "اختار أداة من الأدوات دي علشان تفتح مساحة العمل وتشوف حالتها." },
   "AI Personal Tutor": { en: "AI Personal Tutor", ar: "المعلم الذكي الشخصي" },
+  "Talk with Focus AI": { en: "Talk with Focus AI", ar: "اتكلم مع FOCUS AI" },
+  "Have a voice conversation with your AI study companion.": { en: "Have a voice conversation with your AI study companion.", ar: "اتكلم مع مساعدك الذكي بالصوت واسأله عن مذاكرتك." },
   "An AI learning assistant for explanations, examples, and guided practice.": { en: "An AI learning assistant for explanations, examples, and guided practice.", ar: "مساعد ذكي لشرح الدروس وتقديم الأمثلة والتدريب خطوة بخطوة." },
   "Lecture Assistant": { en: "Lecture Assistant", ar: "مساعد المحاضرات" },
   "Record or upload permitted lectures, transcribe them, and create revision notes.": { en: "Record or upload permitted lectures, transcribe them, and create revision notes.", ar: "ارفع المحاضرات وحوّلها إلى نصوص وملخصات للمراجعة." },
