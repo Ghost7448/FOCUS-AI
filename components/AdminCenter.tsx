@@ -42,7 +42,7 @@ export default function AdminCenter() {
   async function loadLogs() {
     setLoading(true); setError("");
     try {
-      const params = new URLSearchParams({q:search,category,limit:"50"});
+      const params = new URLSearchParams({q:search,category,limit:"20"});
       if(from) params.set("from",from);
       if(to) params.set("to",to);
       const response = await fetch("/api/admin/logs?"+params.toString(),{cache:"no-store"});
@@ -80,7 +80,7 @@ export default function AdminCenter() {
   return <div className="mt-7 space-y-5" dir={language==="ar"?"rtl":"ltr"}>
     <section className="card p-3 sm:p-4">
       <div className="flex flex-wrap gap-2">
-        {tabs.map(tab=>{const Icon=tab.icon;return <button key={tab.label} type="button" onClick={()=>{setSection(tab.label);setError("");}} className={`rounded-xl px-4 py-3 text-sm font-bold transition ${section===tab.label?"bg-brand-900 text-white shadow-lg":"border border-black/10 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"}`}><span className="inline-flex items-center gap-2"><Icon size={17}/>{t(tab.label)}</span></button>;})}
+        {tabs.map(tab=>{const Icon=tab.icon;return <button key={tab.label} type="button" onClick={()=>{setSection(tab.label);setError("");}} className={`rounded-xl px-4 py-3 text-sm font-bold transition ${section===tab.label?"border border-transparent text-white shadow-lg":"border border-black/10 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"}`} style={section===tab.label?{background:"linear-gradient(135deg,var(--accent),var(--accent-strong))"}:undefined}><span className="inline-flex items-center gap-2"><Icon size={17}/>{t(tab.label)}</span></button>;})}
       </div>
     </section>
 
@@ -97,7 +97,7 @@ export default function AdminCenter() {
       <div className="flex justify-end"><button type="button" onClick={()=>void loadLogs()} className="btn btn-primary">{t("Apply filters")}</button></div>
       {error&&<p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {loading?<p className="muted">{t("Loading...")}</p>:<div className="space-y-3">
-        <p className="text-xs muted">{logs.length.toLocaleString()} {t("events loaded (up to 50)")}</p>
+        <p className="text-xs muted">{logs.length.toLocaleString()} {t("events loaded (up to 20)")}</p>
         {logs.map(log=><details key={log.id} className="rounded-xl border border-black/10 p-4 dark:border-white/10">
           <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3"><span><b className="block text-sm">{log.action.replace(/_/g," ")}</b><span className="text-xs muted">{log.actor_name||log.actor_email||t("Guest")} · {log.entity_type||t("Event")}{log.entity_id? " #"+log.entity_id:""}</span></span><span className="text-xs muted">{displayDate(log.created_at)}</span></summary>
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2"><p><b>{t("IP Address")}:</b> {log.ip_address||"—"}</p><p><b>{t("Actor ID")}:</b> {log.actor_user_id||"Guest"}</p><p><b>{t("Entity")}:</b> {log.entity_type||"—"} {log.entity_id||""}</p></div>
