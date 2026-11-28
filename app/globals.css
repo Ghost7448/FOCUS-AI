@@ -430,3 +430,110 @@ input[type="date"]:disabled {
   opacity:.55;
   cursor:not-allowed;
 }
+
+/* B4-Class inspired Select + Date controls, adapted to FOCUS AI light/dark themes. */
+:root {
+  --control-accent: #8b5cf6;
+  --control-accent-strong: #7c3aed;
+  --control-accent-soft: rgba(168,85,247,.10);
+  --control-popup-shadow: 0 22px 60px rgba(41,32,68,.16), 0 0 0 1px rgba(168,85,247,.06);
+}
+.dark {
+  --control-accent: #c084fc;
+  --control-accent-strong: #a855f7;
+  --control-accent-soft: rgba(168,85,247,.16);
+  --control-popup-shadow: 0 22px 70px rgba(0,0,0,.48), 0 0 0 1px rgba(168,85,247,.10);
+}
+select,
+select.field,
+input[type="date"],
+input[type="date"].field {
+  min-height: 52px;
+  border: 1px solid color-mix(in srgb,var(--control-accent) 22%,var(--border));
+  border-radius: 16px;
+  background-color: var(--surface-strong);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 24px rgba(35,25,19,.055);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color .2s ease, background .25s ease, box-shadow .25s ease, transform .2s ease;
+}
+select,
+select.field {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 10px 46px 10px 14px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 18px;
+}
+.dark select,
+.dark select.field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23c084fc' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+[dir="rtl"] select,
+[dir="rtl"] select.field {
+  padding: 10px 14px 10px 46px;
+  background-position: left 15px center;
+  text-align: right;
+}
+select option,
+select optgroup {
+  color: var(--text);
+  background: #fffaf5;
+  font-family: inherit;
+}
+.dark select option,
+.dark select optgroup {
+  color: #f2e4d6;
+  background: #302119;
+}
+input[type="date"],
+input[type="date"].field {
+  padding: 10px 14px;
+  color-scheme: light;
+  accent-color: var(--control-accent-strong);
+  cursor: pointer;
+}
+.dark input[type="date"],
+.dark input[type="date"].field { color-scheme: dark; }
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: .82;
+  padding: 6px;
+  margin-inline-start: 7px;
+  border-radius: 10px;
+  background-color: var(--control-accent-soft);
+  transition: background .18s ease, opacity .18s ease, transform .18s ease;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: color-mix(in srgb,var(--control-accent) 22%,transparent);
+  transform: scale(1.08);
+}
+select:hover,
+select.field:hover,
+input[type="date"]:hover,
+input[type="date"].field:hover {
+  border-color: color-mix(in srgb,var(--control-accent) 58%,var(--border));
+  box-shadow: var(--control-popup-shadow);
+}
+select:focus,
+select.field:focus,
+input[type="date"]:focus,
+input[type="date"].field:focus {
+  outline: none;
+  border-color: var(--control-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb,var(--control-accent) 17%,transparent), var(--control-popup-shadow);
+}
+select:disabled,
+input[type="date"]:disabled { opacity: .5; cursor: not-allowed; }
+@media(max-width:520px) {
+  select, select.field, input[type="date"], input[type="date"].field {
+    min-height: 48px;
+    border-radius: 14px;
+  }
+}
