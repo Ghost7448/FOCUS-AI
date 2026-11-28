@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
   const values: string[] = [];
 
   if (search) {
-    conditions.push("(l.action LIKE ? OR l.entity_type LIKE ? OR COALESCE(u.full_name,'') LIKE ? OR COALESCE(u.email,'') LIKE ? OR CAST(l.metadata AS CHAR) LIKE ?)");
+    conditions.push("(l.action LIKE ? OR l.entity_type LIKE ? OR COALESCE(u.full_name,'') LIKE ? OR COALESCE(u.email,'') LIKE ?)");
     const pattern = `%${search}%`;
-    values.push(pattern, pattern, pattern, pattern, pattern);
+    values.push(pattern, pattern, pattern, pattern);
   }
   const categories: Record<string,string> = {
     auth: "(l.action LIKE 'login_%' OR l.action LIKE 'account_%' OR l.action LIKE 'password_%' OR l.action LIKE 'logout_%' OR l.action LIKE 'verification_%')",
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     platform: "(l.entity_type='platform_settings' OR l.action LIKE 'platform_%')",
     learning: "(l.action LIKE 'focus_%' OR l.action LIKE 'quiz_%' OR l.action LIKE 'tutor_%' OR l.action LIKE 'exam_%')",
     content: "(l.action LIKE 'class_%' OR l.action LIKE 'course_%' OR l.action LIKE 'lesson_%' OR l.action LIKE 'study_file_%')",
-    navigation: "(l.action='page_view')"
+
   };
   if (categories[category]) conditions.push(categories[category]);
   if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) { conditions.push("l.created_at >= ?"); values.push(`${from} 00:00:00`); }
@@ -46,8 +46,7 @@ export async function GET(request: NextRequest) {
          ${where} ORDER BY l.created_at DESC,l.id DESC LIMIT ${limit}`,
       values
     );
-    const [countRows] = await db.execute<RowDataPacket[]>("SELECT COUNT(*) total FROM audit_logs WHERE action <> 'page_view'");
-    const response = NextResponse.json({ logs: rows, total: Number(countRows[0]?.total || 0) });
+    const response = NextResponse.json({ logs: rows, total: rows.length });
     response.headers.set("Cache-Control", "private, no-store");
     return response;
   } catch (error) {
