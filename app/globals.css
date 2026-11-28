@@ -822,3 +822,29 @@ input[type="date"]:disabled { opacity: .5; cursor: not-allowed; }
   --control-accent-soft: color-mix(in srgb,var(--accent) 18%,transparent);
   --control-popup-shadow: 0 22px 70px rgba(0,0,0,.48), 0 0 0 1px color-mix(in srgb,var(--accent) 12%,transparent);
 }
+
+
+/* Keep the Admin Center responsive on lower-powered devices. */
+body:has(.admin-center-root) { animation: none !important; background-size: auto !important; }
+.admin-center-root .card,
+.admin-center-root article,
+.admin-center-root button,
+.admin-center-root input,
+.admin-center-root select,
+.admin-center-root summary {
+  animation: none !important;
+  transition-duration: .12s !important;
+}
+.admin-center-root .card,
+.admin-center-root .card:hover,
+.admin-center-root article:hover,
+.admin-center-root .workspace-feature-card:hover {
+  transform: none !important;
+  box-shadow: 0 8px 24px rgba(54,35,23,.06) !important;
+}
+.admin-center-root .card,
+.admin-center-root .card::before {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.admin-center-root .card::before { display: none !important; }
