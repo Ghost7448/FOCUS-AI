@@ -53,9 +53,21 @@ export async function POST(request: NextRequest) {
 
     let provider: "gemini" | "groq" = "groq";
     let upstream: Response;
-    if (process.env.GEMINI_API_KEY && await reserveGeminiDailyRequest()) {
+
+    // Groq is the default provider for Personal Tutor. If its quota/rate limit
+    // is reached (or its key is missing), fall back to Gemini.
+    try {
+      upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
+    } catch (groqError) {
+      const groqCode = groqError instanceof Error ? groqError.message : "";
+      const canFallback = groqCode === "GROQ_RATE_LIMITED" || groqCode === "GROQ_NOT_CONFIGURED";
+      if (!canFallback || !process.env.GEMINI_API_KEY) throw groqError;
+
+      const hasGeminiSlot = await reserveGeminiDailyRequest();
+      if (!hasGeminiSlot) throw new Error("AI_PROVIDERS_EXHAUSTED");
+
       const model = process.env.GEMINI_TUTOR_MODEL || process.env.GEMINI_MODEL || "gemini-3.8-flash";
-      const primary = await fetch(
+      const fallback = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":streamGenerateContent?alt=sse",
         {
           method: "POST",
@@ -68,24 +80,22 @@ export async function POST(request: NextRequest) {
           cache: "no-store"
         }
       );
-      if (primary.ok && primary.body) {
-        provider = "gemini";
-        upstream = primary;
-      } else {
-        const errorData = await primary.json().catch(() => null);
-        const isQuota = primary.status === 429 || errorData?.error?.status === "RESOURCE_EXHAUSTED" ||
+
+      if (!fallback.ok || !fallback.body) {
+        const errorData = await fallback.json().catch(() => null);
+        const isQuota = fallback.status === 429 || errorData?.error?.status === "RESOURCE_EXHAUSTED" ||
           /quota|rate.?limit|resource exhausted/i.test(String(errorData?.error?.message || ""));
-        console.error("Primary tutor provider failed:", {
-          httpStatus: primary.status,
+        if (isQuota) await markGeminiDailyQuotaExhausted();
+        console.error("Gemini tutor fallback failed:", {
+          httpStatus: fallback.status,
           status: errorData?.error?.status || "unknown",
           message: typeof errorData?.error?.message === "string" ? errorData.error.message.slice(0, 800) : "No error message returned"
         });
-        if (!isQuota) return NextResponse.json({ error: "FOCUS AI could not start a reply. Please try again in a moment." }, { status: 502 });
-        await markGeminiDailyQuotaExhausted();
-        upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
+        throw new Error("AI_PROVIDERS_EXHAUSTED");
       }
-    } else {
-      upstream = await createGroqTutorStream(contents, SYSTEM_PROMPT, 900);
+
+      provider = "gemini";
+      upstream = fallback;
     }
 
     const responseConversationId = activeConversationId;
@@ -158,7 +168,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
     if (code === "GROQ_NOT_CONFIGURED") {
-      return NextResponse.json({ error: "FOCUS AI needs GROQ_API_KEY in Railway Variables when the primary daily limit is reached." }, { status: 503 });
+      return NextResponse.json({ error: "FOCUS AI could not start. Add GROQ_API_KEY or check the Gemini fallback settings." }, { status: 503 });
+    }
+    if (code === "AI_PROVIDERS_EXHAUSTED") {
+      return NextResponse.json({ error: "Both AI providers have reached their available limits. Please try again after the daily reset." }, { status: 503 });
     }
     console.error("Tutor request failed:", error);
     return NextResponse.json({ error: "FOCUS AI could not generate a reply. Please try again in a moment." }, { status: 502 });
