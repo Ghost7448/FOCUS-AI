@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     values.push(pattern, pattern, pattern, pattern, pattern);
   }
   const categories: Record<string,string> = {
-    auth: "(l.action LIKE 'login_%' OR l.action LIKE 'account_%' OR l.action LIKE 'password_%' OR l.action LIKE 'logout_%')",
+    auth: "(l.action LIKE 'login_%' OR l.action LIKE 'account_%' OR l.action LIKE 'password_%' OR l.action LIKE 'logout_%' OR l.action LIKE 'verification_%')",
     users: "(l.entity_type='user' OR l.action LIKE 'user_%')",
     platform: "(l.entity_type='platform_settings' OR l.action LIKE 'platform_%')",
     learning: "(l.action LIKE 'focus_%' OR l.action LIKE 'quiz_%' OR l.action LIKE 'tutor_%' OR l.action LIKE 'exam_%')",
