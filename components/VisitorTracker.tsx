@@ -18,12 +18,14 @@ export default function VisitorTracker() {
       pick(/(CrOS) ([\d.]+)/i) || navigator.platform || "Unknown";
     const deviceType = /tablet|ipad/i.test(ua) ? "Tablet" : /mobile|iphone|ipod|android/i.test(ua) ? "Mobile" : "Desktop";
     const nav = navigator as Navigator & { deviceMemory?: number; userAgentData?: { platform?: string; mobile?: boolean } };
+    let safeReferrer = "";
+    try { if (document.referrer) { const ref = new URL(document.referrer); safeReferrer = ref.origin + ref.pathname; } } catch {}
     const payload = {
       path: pathname, browser, operatingSystem, deviceType, deviceInfo: nav.userAgentData?.platform || deviceType,
       screenResolution: screen ? `${screen.width} × ${screen.height} (${window.devicePixelRatio || 1}x)` : "",
       language: navigator.languages?.join(", ") || navigator.language || "",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-      referrer: document.referrer || "", cookiesEnabled: !!navigator.cookieEnabled,
+      referrer: safeReferrer, cookiesEnabled: !!navigator.cookieEnabled,
       platform: nav.userAgentData?.platform || navigator.platform || "",
       hardwareConcurrency: navigator.hardwareConcurrency || 0,
       deviceMemory: nav.deviceMemory || 0, touchPoints: navigator.maxTouchPoints || 0
