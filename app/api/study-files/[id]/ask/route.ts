@@ -40,9 +40,11 @@ export async function POST(
     let originalBytes: Buffer;
     try { originalBytes = restoreStudyFile(file.file_data, file.compression_method); }
     catch { return NextResponse.json({ error: "This stored file could not be decompressed." }, { status: 415 }); }
-    if (originalBytes.length > 15 * 1024 * 1024) {
-      return NextResponse.json({ error: "Uploads can be 30 MB, but Gemini questions currently support files up to 15 MB." }, { status: 413 });
+    if (originalBytes.length > 14 * 1024 * 1024) {
+      return NextResponse.json({ error: "Uploads can be 30 MB, but Gemini questions currently support files up to 14 MB." }, { status: 413 });
     }
+    const isAudio = file.mime_type.startsWith("audio/");
+    const geminiMimeType = file.mime_type === "audio/x-m4a" ? "audio/mp4" : file.mime_type === "audio/x-wav" ? "audio/wav" : file.mime_type === "audio/mp3" ? "audio/mpeg" : file.mime_type;
     const language = user.preferred_language === "ar" ? "Arabic" : "English";
     const answer = await generateGeminiText(
       [{
@@ -50,11 +52,12 @@ export async function POST(
         parts: [
           { text: "Study file: " + file.original_name + "\nStudent question: " + parsed.data.question +
             "\nAnswer in " + language + ". Base the answer on the attached file. Include page references for PDFs only when identifiable. If the file does not contain the answer, say so." },
-          { inlineData: { mimeType: file.mime_type, data: originalBytes.toString("base64") } }
+          { inlineData: { mimeType: geminiMimeType, data: originalBytes.toString("base64") } }
         ]
       }],
       "You are FOCUS AI Study Assistant. Answer questions about the student's uploaded learning material accurately. Do not invent facts, quotations, or page numbers.",
-      3000
+      3000,
+      isAudio ? (process.env.GEMINI_AUDIO_MODEL || "gemini-3.5-flash") : undefined
     );
     return NextResponse.json({ answer });
   } catch (error) {
