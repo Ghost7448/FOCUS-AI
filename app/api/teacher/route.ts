@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/mysql";
+import { writeAuditLog } from "@/lib/audit";
 import { generateFocusText } from "@/lib/ai-provider";
 import { hasSameOrigin } from "@/lib/security";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
@@ -70,7 +71,8 @@ export async function POST(request: NextRequest) {
   const input = parsed.data;
   try {
     if (input.action === "create_course") {
-      await db.execute("INSERT INTO subjects(name,description) VALUES(?,?)", [input.name,input.description || null]);
+      const [result] = await db.execute<ResultSetHeader>("INSERT INTO subjects(name,description) VALUES(?,?)", [input.name,input.description || null]);
+      await writeAuditLog({ actorUserId:user.id, action:"course_created", entityType:"course", entityId:result.insertId, metadata:{ name:input.name } });
       return NextResponse.json({ message: "Course created." });
     }
     if (input.action === "create_class") {
@@ -79,6 +81,7 @@ export async function POST(request: NextRequest) {
       const [result] = await db.execute<ResultSetHeader>(
         "INSERT INTO classes(teacher_id,subject_id,name,description,join_code_hash) VALUES(?,?,?,?,?)",
         [user.id,input.subjectId || null,input.name,input.description || null,hash]);
+      await writeAuditLog({ actorUserId:user.id, action:"class_created", entityType:"class", entityId:result.insertId, metadata:{ name:input.name } });
       return NextResponse.json({ message: "Class created.", classId: result.insertId, joinCode });
     }
     if (input.action === "publish_lesson") {
@@ -88,6 +91,7 @@ export async function POST(request: NextRequest) {
           : "UPDATE lessons SET status='published',published_at=UTC_TIMESTAMP() WHERE id=? AND teacher_id=?",
         user.role === "admin" ? [input.lessonId] : [input.lessonId,user.id]);
       if (!result.affectedRows) return NextResponse.json({ error: "Lesson not found." }, { status: 404 });
+      await writeAuditLog({ actorUserId:user.id, action:"lesson_published", entityType:"lesson", entityId:input.lessonId });
       return NextResponse.json({ message: "Lesson published." });
     }
     if (!await ownedClass(input.classId, user.id) && user.role !== "admin") return NextResponse.json({ error: "Class not found." }, { status: 404 });
@@ -95,6 +99,7 @@ export async function POST(request: NextRequest) {
       const [result] = await db.execute<ResultSetHeader>(
         "INSERT INTO lessons(class_id,teacher_id,title,content,status,published_at) VALUES(?,?,?,?,?,?)",
         [input.classId,user.id,input.title,input.content,input.publish ? "published" : "draft",input.publish ? new Date() : null]);
+      await writeAuditLog({ actorUserId:user.id, action:"lesson_created", entityType:"lesson", entityId:result.insertId, metadata:{ title:input.title, status:input.publish?"published":"draft" } });
       return NextResponse.json({ message: "Lesson saved.", lessonId: result.insertId });
     }
     if (input.action === "plan_lesson") {
@@ -102,6 +107,7 @@ export async function POST(request: NextRequest) {
         ? `أنشئ خطة درس عملية باللغة العربية عن: ${input.topic}. المستوى: ${input.level || "عام"}. المدة: ${input.duration} دقيقة. أخرج أهداف التعلم، المتطلبات السابقة، تقسيم الوقت، شرح الأنشطة، أسئلة التقييم والواجب. استخدم عناوين واضحة.`
         : `Create a practical lesson plan in English about: ${input.topic}. Level: ${input.level || "general"}. Duration: ${input.duration} minutes. Include learning objectives, prerequisites, timed teaching activities, assessment questions, and homework with clear headings.`;
       const plan = await generateFocusText([{ role: "user", parts: [{ text: prompt }] }], "You are an experienced instructional designer. Produce accurate, classroom-ready lesson plans.", 2200);
+      await writeAuditLog({ actorUserId:user.id, action:"lesson_plan_generated", entityType:"lesson_plan", metadata:{ topic:input.topic, classId:input.classId } });
       return NextResponse.json({ plan });
     }
     if (input.action === "create_exam") {
@@ -119,6 +125,7 @@ export async function POST(request: NextRequest) {
         await db.execute("INSERT INTO exam_questions(exam_id,question_text,question_type,options_json,answer_key,points) VALUES(?,?,'multiple_choice',?,?,1)",
           [examResult.insertId,q.question,JSON.stringify(q.options),String(q.answer)]);
       }
+      await writeAuditLog({ actorUserId:user.id, action:"exam_created", entityType:"exam", entityId:examResult.insertId, metadata:{ title:input.title, questionCount:questions.length, classId:input.classId } });
       return NextResponse.json({ message: "Exam created.", examId: examResult.insertId, questions: questions.map((q: any) => ({ question: q.question, options: q.options, explanation: q.explanation })) });
     }
     return NextResponse.json({ error: "Unsupported action." }, { status: 400 });
