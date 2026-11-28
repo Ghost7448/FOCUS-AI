@@ -39,8 +39,8 @@ export async function POST(
     let originalBytes: Buffer;
     try { originalBytes = restoreStudyFile(file.file_data, file.compression_method); }
     catch { return NextResponse.json({ error: "This stored file could not be decompressed." }, { status: 415 }); }
-    if (originalBytes.length > 15 * 1024 * 1024) {
-      return NextResponse.json({ error: "Uploads can be 30 MB, but Gemini analysis currently supports files up to 15 MB. Try a smaller file." }, { status: 413 });
+    if (originalBytes.length > 14 * 1024 * 1024) {
+      return NextResponse.json({ error: "Gemini inline audio/PDF analysis currently supports files up to 14 MB. Please upload a smaller file." }, { status: 413 });
     }
 
     const isPdf = file.mime_type === "application/pdf";
@@ -65,7 +65,8 @@ export async function POST(
         ]
       }],
       "You are FOCUS AI Study Assistant. Help students understand their own learning materials. Be accurate, structured, and do not invent content, quotations, transcripts, or page numbers.",
-      8192
+      8192,
+      isAudio ? (process.env.GEMINI_AUDIO_MODEL || "gemini-2.5-flash") : undefined
     );
 
     await db.execute<ResultSetHeader>(
